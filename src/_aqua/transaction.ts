@@ -35,14 +35,17 @@ export function get_pending_transactions(...args: any) {
                      (seq
                       (seq
                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                       (call %init_peer_id% ("node" "get_pending_transactions") [] results)
+                       (xor
+                        (call -relay- ("transaction" "get_pending_transactions") [] results)
+                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       )
                       )
                       (xor
                        (call %init_peer_id% ("callbackSrv" "response") [results])
-                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
                       )
                      )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
                     )
     `
     return callFunction$$(
@@ -160,16 +163,20 @@ export function get_pending_transactions(...args: any) {
     )
 }
 
-export type Get_metadata_with_historyArgArgs = { alias: string; data_key: string; public_key: string; } 
+ 
 export type Get_metadata_with_historyResult = { err_msg: string; history: string[]; metadata: string; success: boolean; }
 export function get_metadata_with_history(
-    args: Get_metadata_with_historyArgArgs,
+    data_key: string,
+    public_key: string,
+    alias: string,
     config?: {ttl?: number}
 ): Promise<Get_metadata_with_historyResult>;
 
 export function get_metadata_with_history(
     peer: FluencePeer,
-    args: Get_metadata_with_historyArgArgs,
+    data_key: string,
+    public_key: string,
+    alias: string,
     config?: {ttl?: number}
 ): Promise<Get_metadata_with_historyResult>;
 
@@ -181,19 +188,25 @@ export function get_metadata_with_history(...args: any) {
                       (seq
                        (seq
                         (seq
-                         (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                         (call %init_peer_id% ("getDataSrv" "args") [] args)
+                         (seq
+                          (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                          (call %init_peer_id% ("getDataSrv" "data_key") [] data_key)
+                         )
+                         (call %init_peer_id% ("getDataSrv" "public_key") [] public_key)
                         )
-                        (null)
+                        (call %init_peer_id% ("getDataSrv" "alias") [] alias)
                        )
-                       (call %init_peer_id% ("node" "get_metadata_with_history") [args.$.data_key! args.$.public_key! args.$.alias!] results)
+                       (xor
+                        (call -relay- ("transaction" "get_metadata_with_history") [data_key public_key alias] results)
+                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       )
                       )
                       (xor
                        (call %init_peer_id% ("callbackSrv" "response") [results])
-                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
                       )
                      )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
                     )
     `
     return callFunction$$(
@@ -205,23 +218,17 @@ export function get_metadata_with_history(...args: any) {
         "domain" : {
             "tag" : "labeledProduct",
             "fields" : {
-                "args" : {
-                    "tag" : "struct",
-                    "name" : "Metadata",
-                    "fields" : {
-                        "alias" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "data_key" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "public_key" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        }
-                    }
+                "data_key" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "public_key" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "alias" : {
+                    "tag" : "scalar",
+                    "name" : "string"
                 }
             }
         },
@@ -271,67 +278,7 @@ export function get_metadata_with_history(...args: any) {
 }
 
  
-
-export function bind_meta_contract(
-    transaction_hash: string,
-    config?: {ttl?: number}
-): Promise<void>;
-
-export function bind_meta_contract(
-    peer: FluencePeer,
-    transaction_hash: string,
-    config?: {ttl?: number}
-): Promise<void>;
-
-export function bind_meta_contract(...args: any) {
-
-    let script = `
-                    (xor
-                     (seq
-                      (seq
-                       (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                       (call %init_peer_id% ("getDataSrv" "transaction_hash") [] transaction_hash)
-                      )
-                      (call %init_peer_id% ("node" "bind_meta_contract") [transaction_hash])
-                     )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
-                    )
-    `
-    return callFunction$$(
-        args,
-        {
-    "functionName" : "bind_meta_contract",
-    "arrow" : {
-        "tag" : "arrow",
-        "domain" : {
-            "tag" : "labeledProduct",
-            "fields" : {
-                "transaction_hash" : {
-                    "tag" : "scalar",
-                    "name" : "string"
-                }
-            }
-        },
-        "codomain" : {
-            "tag" : "nil"
-        }
-    },
-    "names" : {
-        "relay" : "-relay-",
-        "getDataSrv" : "getDataSrv",
-        "callbackSrv" : "callbackSrv",
-        "responseSrv" : "callbackSrv",
-        "responseFnName" : "response",
-        "errorHandlingSrv" : "errorHandlingSrv",
-        "errorFnName" : "error"
-    }
-},
-        script
-    )
-}
-
- 
-export type Get_all_cronsResult = { crons: { address: string; chain: string; status: number; token_type: string; topic: string; }[]; err_msg: string; success: boolean; }
+export type Get_all_cronsResult = { crons: { address: string; chain: string; cron_id: number; meta_contract_id: string; node_url: string; status: number; token_type: string; topic: string; }[]; err_msg: string; success: boolean; }
 export function get_all_crons(
     config?: {ttl?: number}
 ): Promise<Get_all_cronsResult>;
@@ -348,14 +295,17 @@ export function get_all_crons(...args: any) {
                      (seq
                       (seq
                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                       (call %init_peer_id% ("node" "get_all_crons") [] results)
+                       (xor
+                        (call -relay- ("transaction" "get_all_crons") [] results)
+                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       )
                       )
                       (xor
                        (call %init_peer_id% ("callbackSrv" "response") [results])
-                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
                       )
                      )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
                     )
     `
     return callFunction$$(
@@ -381,8 +331,16 @@ export function get_all_crons(...args: any) {
                             "tag" : "array",
                             "type" : {
                                 "tag" : "struct",
-                                "name" : "Cron",
+                                "name" : "CronResult",
                                 "fields" : {
+                                    "cron_id" : {
+                                        "tag" : "scalar",
+                                        "name" : "i64"
+                                    },
+                                    "node_url" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
                                     "token_type" : {
                                         "tag" : "scalar",
                                         "name" : "string"
@@ -400,6 +358,10 @@ export function get_all_crons(...args: any) {
                                         "name" : "string"
                                     },
                                     "chain" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "meta_contract_id" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     }
@@ -456,14 +418,17 @@ export function get_metadatas(...args: any) {
                         (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
                         (call %init_peer_id% ("getDataSrv" "data_key") [] data_key)
                        )
-                       (call %init_peer_id% ("node" "get_metadatas") [data_key] results)
+                       (xor
+                        (call -relay- ("transaction" "get_metadatas") [data_key] results)
+                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       )
                       )
                       (xor
                        (call %init_peer_id% ("callbackSrv" "response") [results])
-                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
                       )
                      )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
                     )
     `
     return callFunction$$(
@@ -563,14 +528,17 @@ export function get_meta_contract(...args: any) {
                         (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
                         (call %init_peer_id% ("getDataSrv" "token_key") [] token_key)
                        )
-                       (call %init_peer_id% ("node" "get_meta_contract") [token_key] results)
+                       (xor
+                        (call -relay- ("transaction" "get_meta_contract") [token_key] results)
+                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       )
                       )
                       (xor
                        (call %init_peer_id% ("callbackSrv" "response") [results])
-                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
                       )
                      )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
                     )
     `
     return callFunction$$(
@@ -640,16 +608,138 @@ export function get_meta_contract(...args: any) {
     )
 }
 
-export type Get_metadataArgArgs = { alias: string; data_key: string; public_key: string; } 
+ 
+export type Get_active_cronsResult = { crons: { address: string; chain: string; cron_id: number; meta_contract_id: string; node_url: string; status: number; token_type: string; topic: string; }[]; err_msg: string; success: boolean; }
+export function get_active_crons(
+    config?: {ttl?: number}
+): Promise<Get_active_cronsResult>;
+
+export function get_active_crons(
+    peer: FluencePeer,
+    config?: {ttl?: number}
+): Promise<Get_active_cronsResult>;
+
+export function get_active_crons(...args: any) {
+
+    let script = `
+                    (xor
+                     (seq
+                      (seq
+                       (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                       (xor
+                        (call -relay- ("transaction" "get_active_crons") [] results)
+                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       )
+                      )
+                      (xor
+                       (call %init_peer_id% ("callbackSrv" "response") [results])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                      )
+                     )
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
+                    )
+    `
+    return callFunction$$(
+        args,
+        {
+    "functionName" : "get_active_crons",
+    "arrow" : {
+        "tag" : "arrow",
+        "domain" : {
+            "tag" : "labeledProduct",
+            "fields" : {
+                
+            }
+        },
+        "codomain" : {
+            "tag" : "unlabeledProduct",
+            "items" : [
+                {
+                    "tag" : "struct",
+                    "name" : "FdbCronsResult",
+                    "fields" : {
+                        "crons" : {
+                            "tag" : "array",
+                            "type" : {
+                                "tag" : "struct",
+                                "name" : "CronResult",
+                                "fields" : {
+                                    "cron_id" : {
+                                        "tag" : "scalar",
+                                        "name" : "i64"
+                                    },
+                                    "node_url" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "token_type" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "status" : {
+                                        "tag" : "scalar",
+                                        "name" : "i64"
+                                    },
+                                    "address" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "topic" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "chain" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "meta_contract_id" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    }
+                                }
+                            }
+                        },
+                        "err_msg" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "success" : {
+                            "tag" : "scalar",
+                            "name" : "bool"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "names" : {
+        "relay" : "-relay-",
+        "getDataSrv" : "getDataSrv",
+        "callbackSrv" : "callbackSrv",
+        "responseSrv" : "callbackSrv",
+        "responseFnName" : "response",
+        "errorHandlingSrv" : "errorHandlingSrv",
+        "errorFnName" : "error"
+    }
+},
+        script
+    )
+}
+
+ 
 export type Get_metadataResult = { err_msg: string; metadata: { alias: string; cid: string; data_key: string; public_key: string; }; success: boolean; }
 export function get_metadata(
-    args: Get_metadataArgArgs,
+    data_key: string,
+    public_key: string,
+    alias: string,
     config?: {ttl?: number}
 ): Promise<Get_metadataResult>;
 
 export function get_metadata(
     peer: FluencePeer,
-    args: Get_metadataArgArgs,
+    data_key: string,
+    public_key: string,
+    alias: string,
     config?: {ttl?: number}
 ): Promise<Get_metadataResult>;
 
@@ -661,19 +751,25 @@ export function get_metadata(...args: any) {
                       (seq
                        (seq
                         (seq
-                         (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                         (call %init_peer_id% ("getDataSrv" "args") [] args)
+                         (seq
+                          (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                          (call %init_peer_id% ("getDataSrv" "data_key") [] data_key)
+                         )
+                         (call %init_peer_id% ("getDataSrv" "public_key") [] public_key)
                         )
-                        (null)
+                        (call %init_peer_id% ("getDataSrv" "alias") [] alias)
                        )
-                       (call %init_peer_id% ("node" "get_metadata") [args.$.data_key! args.$.public_key! args.$.alias!] results)
+                       (xor
+                        (call -relay- ("transaction" "get_metadata") [data_key public_key alias] results)
+                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       )
                       )
                       (xor
                        (call %init_peer_id% ("callbackSrv" "response") [results])
-                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
                       )
                      )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
                     )
     `
     return callFunction$$(
@@ -685,23 +781,17 @@ export function get_metadata(...args: any) {
         "domain" : {
             "tag" : "labeledProduct",
             "fields" : {
-                "args" : {
-                    "tag" : "struct",
-                    "name" : "Metadata",
-                    "fields" : {
-                        "alias" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "data_key" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "public_key" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        }
-                    }
+                "data_key" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "public_key" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "alias" : {
+                    "tag" : "scalar",
+                    "name" : "string"
                 }
             }
         },
@@ -781,20 +871,23 @@ export function send_transaction(...args: any) {
                      (seq
                       (seq
                        (seq
-                        (seq
-                         (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                         (call %init_peer_id% ("getDataSrv" "args") [] args)
-                        )
-                        (null)
+                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                        (call %init_peer_id% ("getDataSrv" "args") [] args)
                        )
-                       (call %init_peer_id% ("node" "send_transaction") [args.$.data_key! args.$.token_key! args.$.token_id! args.$.alias! args.$.public_key! args.$.signature! args.$.data! args.$.method! args.$.nonce!] results)
+                       (xor
+                        (seq
+                         (null)
+                         (call -relay- ("transaction" "send_transaction") [args.$.data_key! args.$.token_key! args.$.token_id! args.$.alias! args.$.public_key! args.$.signature! args.$.data! args.$.method! args.$.nonce!] results)
+                        )
+                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       )
                       )
                       (xor
                        (call %init_peer_id% ("callbackSrv" "response") [results])
-                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
                       )
                      )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
                     )
     `
     return callFunction$$(
@@ -880,91 +973,6 @@ export function send_transaction(...args: any) {
     )
 }
 
-export type Set_cloneArgArgs = { data: string; final_error_msg: string; meta_contract_id: string; on_metacontract_result: boolean; transaction_hash: string; } 
-
-export function set_clone(
-    args: Set_cloneArgArgs,
-    config?: {ttl?: number}
-): Promise<void>;
-
-export function set_clone(
-    peer: FluencePeer,
-    args: Set_cloneArgArgs,
-    config?: {ttl?: number}
-): Promise<void>;
-
-export function set_clone(...args: any) {
-
-    let script = `
-                    (xor
-                     (seq
-                      (seq
-                       (seq
-                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                        (call %init_peer_id% ("getDataSrv" "args") [] args)
-                       )
-                       (null)
-                      )
-                      (call %init_peer_id% ("node" "set_clone") [args.$.transaction_hash! args.$.meta_contract_id! args.$.on_metacontract_result! args.$.data! args.$.final_error_msg!])
-                     )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
-                    )
-    `
-    return callFunction$$(
-        args,
-        {
-    "functionName" : "set_clone",
-    "arrow" : {
-        "tag" : "arrow",
-        "domain" : {
-            "tag" : "labeledProduct",
-            "fields" : {
-                "args" : {
-                    "tag" : "struct",
-                    "name" : "SetClone",
-                    "fields" : {
-                        "transaction_hash" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "on_metacontract_result" : {
-                            "tag" : "scalar",
-                            "name" : "bool"
-                        },
-                        "data" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "final_error_msg" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "meta_contract_id" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        }
-                    }
-                }
-            }
-        },
-        "codomain" : {
-            "tag" : "nil"
-        }
-    },
-    "names" : {
-        "relay" : "-relay-",
-        "getDataSrv" : "getDataSrv",
-        "callbackSrv" : "callbackSrv",
-        "responseSrv" : "callbackSrv",
-        "responseFnName" : "response",
-        "errorHandlingSrv" : "errorHandlingSrv",
-        "errorFnName" : "error"
-    }
-},
-        script
-    )
-}
-
  
 export type Get_transactionResult = { err_msg: string; success: boolean; transaction: { alias: string; data: string; data_key: string; error_text: string; from_peer_id: string; hash: string; host_id: string; meta_contract_id: string; method: string; nonce: number; public_key: string; status: number; timestamp: number; token_id: string; token_key: string; }; }
 export function get_transaction(
@@ -988,14 +996,17 @@ export function get_transaction(...args: any) {
                         (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
                         (call %init_peer_id% ("getDataSrv" "hash") [] hash)
                        )
-                       (call %init_peer_id% ("node" "get_transaction") [hash] results)
+                       (xor
+                        (call -relay- ("transaction" "get_transaction") [hash] results)
+                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       )
                       )
                       (xor
                        (call %init_peer_id% ("callbackSrv" "response") [results])
-                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
                       )
                      )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
                     )
     `
     return callFunction$$(
@@ -1097,211 +1108,6 @@ export function get_transaction(...args: any) {
                     }
                 }
             ]
-        }
-    },
-    "names" : {
-        "relay" : "-relay-",
-        "getDataSrv" : "getDataSrv",
-        "callbackSrv" : "callbackSrv",
-        "responseSrv" : "callbackSrv",
-        "responseFnName" : "response",
-        "errorHandlingSrv" : "errorHandlingSrv",
-        "errorFnName" : "error"
-    }
-},
-        script
-    )
-}
-
- 
-export type Get_active_cronsResult = { crons: { address: string; chain: string; status: number; token_type: string; topic: string; }[]; err_msg: string; success: boolean; }
-export function get_active_crons(
-    config?: {ttl?: number}
-): Promise<Get_active_cronsResult>;
-
-export function get_active_crons(
-    peer: FluencePeer,
-    config?: {ttl?: number}
-): Promise<Get_active_cronsResult>;
-
-export function get_active_crons(...args: any) {
-
-    let script = `
-                    (xor
-                     (seq
-                      (seq
-                       (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                       (call %init_peer_id% ("node" "get_active_crons") [] results)
-                      )
-                      (xor
-                       (call %init_peer_id% ("callbackSrv" "response") [results])
-                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
-                      )
-                     )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
-                    )
-    `
-    return callFunction$$(
-        args,
-        {
-    "functionName" : "get_active_crons",
-    "arrow" : {
-        "tag" : "arrow",
-        "domain" : {
-            "tag" : "labeledProduct",
-            "fields" : {
-                
-            }
-        },
-        "codomain" : {
-            "tag" : "unlabeledProduct",
-            "items" : [
-                {
-                    "tag" : "struct",
-                    "name" : "FdbCronsResult",
-                    "fields" : {
-                        "crons" : {
-                            "tag" : "array",
-                            "type" : {
-                                "tag" : "struct",
-                                "name" : "Cron",
-                                "fields" : {
-                                    "token_type" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "status" : {
-                                        "tag" : "scalar",
-                                        "name" : "i64"
-                                    },
-                                    "address" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "topic" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "chain" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    }
-                                }
-                            }
-                        },
-                        "err_msg" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "success" : {
-                            "tag" : "scalar",
-                            "name" : "bool"
-                        }
-                    }
-                }
-            ]
-        }
-    },
-    "names" : {
-        "relay" : "-relay-",
-        "getDataSrv" : "getDataSrv",
-        "callbackSrv" : "callbackSrv",
-        "responseSrv" : "callbackSrv",
-        "responseFnName" : "response",
-        "errorHandlingSrv" : "errorHandlingSrv",
-        "errorFnName" : "error"
-    }
-},
-        script
-    )
-}
-
-export type Set_metadataArgArgs = { final_error_msg: string; meta_contract_id: string; metadatas: { alias: string; content: string; public_key: string; }[]; on_metacontract_result: boolean; transaction_hash: string; } 
-
-export function set_metadata(
-    args: Set_metadataArgArgs,
-    config?: {ttl?: number}
-): Promise<void>;
-
-export function set_metadata(
-    peer: FluencePeer,
-    args: Set_metadataArgArgs,
-    config?: {ttl?: number}
-): Promise<void>;
-
-export function set_metadata(...args: any) {
-
-    let script = `
-                    (xor
-                     (seq
-                      (seq
-                       (seq
-                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                        (call %init_peer_id% ("getDataSrv" "args") [] args)
-                       )
-                       (null)
-                      )
-                      (call %init_peer_id% ("node" "set_metadata") [args.$.transaction_hash! args.$.meta_contract_id! args.$.on_metacontract_result! args.$.metadatas! args.$.final_error_msg!])
-                     )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
-                    )
-    `
-    return callFunction$$(
-        args,
-        {
-    "functionName" : "set_metadata",
-    "arrow" : {
-        "tag" : "arrow",
-        "domain" : {
-            "tag" : "labeledProduct",
-            "fields" : {
-                "args" : {
-                    "tag" : "struct",
-                    "name" : "SetMetadata",
-                    "fields" : {
-                        "transaction_hash" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "on_metacontract_result" : {
-                            "tag" : "scalar",
-                            "name" : "bool"
-                        },
-                        "metadatas" : {
-                            "tag" : "array",
-                            "type" : {
-                                "tag" : "struct",
-                                "name" : "FinalMetadata",
-                                "fields" : {
-                                    "alias" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "content" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "public_key" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    }
-                                }
-                            }
-                        },
-                        "final_error_msg" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "meta_contract_id" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        }
-                    }
-                }
-            }
-        },
-        "codomain" : {
-            "tag" : "nil"
         }
     },
     "names" : {
