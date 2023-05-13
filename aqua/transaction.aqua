@@ -16,28 +16,68 @@ data SendTransaction:
   method:string 
   nonce: i64
 
-data SetClone:
-  transaction_hash: string
-  meta_contract_id: string
-  on_metacontract_result: bool
-  data: string
-  final_error_msg: string
+data SearchMetadatas:
+  query: []MetadataQuery
+  ordering: []MetadataOrdering
+  from: u32
+  to: u32
 
-data SetMetadata:
-  transaction_hash: string 
-  meta_contract_id: string 
-  on_metacontract_result: bool 
-  metadatas: []FinalMetadata
-  final_error_msg: string
+data GetCronTxByTxHash:
+  tx_hash: string
+  address: string
+  chain: string
+  topic: string
+
+data GetCronTxByLatestBlock:
+  address: string
+  chain: string
+  topic: string
+
+data GetSuccessTransactions:
+  from: i64
+  to: i64
+
+data SearchCronTx:
+  address: string
+  chain: string
+  topic: string
+
+data SendCronTx:
+  cron_id: i64
+  data_key: string
+  data: string 
+  tx_block_number: u64
+  tx_hash: string
+  token_id: string
+
+func deserialize_fork(data: string) -> DataTypeFork:
+    on HOST_PEER_ID:
+        results <- Node.deserialize_fork(data)
+    <- results
 
 func get_active_crons() -> FdbCronsResult:
     on HOST_PEER_ID:
         results <- Node.get_active_crons()
     <- results
 
+func  get_all_cron_txs() -> FdbCronTxsResult:
+    on HOST_PEER_ID:
+        results <- Node.get_all_cron_txs()
+    <- results
+
 func get_all_crons() -> FdbCronsResult:
     on HOST_PEER_ID:
         results <- Node.get_all_crons()
+    <- results
+
+func get_cron_tx_by_tx_hash(args: GetCronTxByTxHash) -> FdbCronTxResult:
+    on HOST_PEER_ID:
+        results <- Node.get_cron_tx_by_tx_hash(args.tx_hash, args.address, args.chain, args.topic)
+    <- results
+
+func get_cron_tx_latest_block(args: GetCronTxByLatestBlock) -> u64:
+    on HOST_PEER_ID:
+        results <- Node.get_cron_tx_latest_block(args.address, args.chain, args.topic)
     <- results
 
 func get_meta_contract(token_key: string) -> FdbMetaContractResult:
@@ -60,14 +100,39 @@ func get_metadatas(data_key: string) -> FdbMetadatasResult:
         results <- Node.get_metadatas(data_key)
     <- results
 
+func get_node_clock() -> FdbClock:
+    on HOST_PEER_ID:
+        results <- Node.get_node_clock()
+    <- results
+
 func get_pending_transactions() -> FdbTransactionsResult:
     on HOST_PEER_ID:
         results <- Node.get_pending_transactions()
     <- results
 
+func get_success_transactions(args: GetSuccessTransactions) -> FdbTransactionsResult:
+   on HOST_PEER_ID:
+        results <- Node.get_success_transactions(args.from, args.to)
+   <- results
+
 func get_transaction(hash: string) -> FdbTransactionResult:
     on HOST_PEER_ID:
         results <- Node.get_transaction(hash)
+    <- results
+
+func search_cron_tx(args: SearchCronTx) -> FdbCronTxsResult:
+    on HOST_PEER_ID:
+        results <- Node.search_cron_tx(args.address, args.chain, args.topic)
+    <- results
+
+func search_metadatas(args:SearchMetadatas) -> FdbMetadatasResult:
+    on HOST_PEER_ID:
+        results <- Node.search_metadatas(args.query, args.ordering, args.from, args.to)
+    <- results
+
+func send_cron_tx(args: SendCronTx) -> FdbCronTxResult:
+    on HOST_PEER_ID:
+        results <- Node.send_cron_tx(args.cron_id, args.data_key, args.data, args.tx_block_number, args.tx_hash, args.token_id)
     <- results
 
 func send_transaction(args: SendTransaction) -> FdbResult:
