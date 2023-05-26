@@ -1,9 +1,9 @@
-POST http://localhost:8080/api/v0/json-rpc HTTP/1.1
+POST http://localhost:3030/api/v0/json-rpc/ HTTP/1.1
 content-type: application/json
 
 {
     "jsonrpc": "2.0",
-    "method": "bind_meta_contract",
-    "params": {"transaction_hash":"0xf854b5C88EDE2e17DEd24f2Ff55abE3a20b97ADd"},
+    "method": "get_metadatas",
+    "params": ["0c2437d898045ee74fb3f0e732e1e2a1edc73b761f8168d466b43a3507fc17c2"],
     "id": "string"
 }
