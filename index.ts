@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import { TransactionController } from './src/controller';
 
 const bodyParser = require('body-parser');
+const cors = require('cors');
 import { JSONRPCServer } from 'json-rpc-2.0';
 import type { JSONRPCRequest } from 'json-rpc-2.0';
 import dotenv from 'dotenv';
@@ -24,6 +25,7 @@ for (let i = 0; i < methods.length; i++) {
 const app: Express = express();
 
 app.use(bodyParser.json());
+app.use(cors());
 
 app.post('/api/v0/json-rpc', async (req: Request, res: Response) => {
 	const jsonRPCRequest: JSONRPCRequest = req.body;
