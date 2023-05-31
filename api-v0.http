@@ -1,9 +1,37 @@
-POST http://localhost:3030/api/v0/json-rpc/ HTTP/1.1
+POST https://dev.fluence.0x3zero.com/api/v0/json-rpc HTTP/1.1
 content-type: application/json
+
+# {
+#     "jsonrpc": "2.0",
+#     "method": "get_metadatas",
+#     "params": ["0c2437d898045ee74fb3f0e732e1e2a1edc73b761f8168d466b43a3507fc17c2"],
+#     "id": "string"
+# }
+
+# {
+#     "jsonrpc": "2.0",
+#     "method": "get_metadata",
+#     "params": ["0c2437d898045ee74fb3f0e732e1e2a1edc73b761f8168d466b43a3507fc17c2", "0xc20de1a30487ec70fc730866f297f2e2f1e411f7",  "name"],
+#     "id": "string"
+# }
 
 {
     "jsonrpc": "2.0",
-    "method": "get_metadatas",
-    "params": ["0c2437d898045ee74fb3f0e732e1e2a1edc73b761f8168d466b43a3507fc17c2"],
+    "method": "get_metadata_with_history",
+    "params": ["0c2437d898045ee74fb3f0e732e1e2a1edc73b761f8168d466b43a3507fc17c2", "0xc20de1a30487ec70fc730866f297f2e2f1e411f7",  "attributes"],
     "id": "string"
 }
+
+# {
+#     "jsonrpc": "2.0",
+#     "method": "get_meta_contract",
+#     "params": ["58b196f4-2564-4dca-9a6a-f02f8280bf2a"],
+#     "id": "string"
+# }
+
+# {
+#     "jsonrpc": "2.0",
+#     "method": "get_transaction",
+#     "params": ["7mqQPqBfLhsG9hH7738uorFtmgY6ZtPQ5pVaV3qdBbhk"],
+#     "id": "string"
+# }

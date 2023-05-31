@@ -25,7 +25,11 @@ for (let i = 0; i < methods.length; i++) {
 const app: Express = express();
 
 app.use(bodyParser.json());
-app.use(cors());
+app.use(
+	cors({
+		origin: '*',
+	})
+);
 
 app.post('/api/v0/json-rpc', async (req: Request, res: Response) => {
 	const jsonRPCRequest: JSONRPCRequest = req.body;
