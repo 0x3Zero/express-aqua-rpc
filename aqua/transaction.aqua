@@ -50,6 +50,12 @@ data SendCronTx:
   tx_hash: string
   token_id: string
 
+data GetTransactions:
+  query: []TransactionQuery
+  ordering: []TransactionOrdering
+  from: u32
+  to: u32
+
 func deserialize_fork(data: string) -> DataTypeFork:
     on HOST_PEER_ID:
         results <- Node.deserialize_fork(data)
@@ -118,6 +124,11 @@ func get_success_transactions(args: GetSuccessTransactions) -> FdbTransactionsRe
 func get_transaction(hash: string) -> FdbTransactionResult:
     on HOST_PEER_ID:
         results <- Node.get_transaction(hash)
+    <- results
+
+func get_transactions(args: GetTransactions) -> FdbTransactionsResult:
+    on HOST_PEER_ID:
+        results <- Node.get_transactions(args.query, args.ordering, args.from, args.to)
     <- results
 
 func search_cron_tx(args: SearchCronTx) -> FdbCronTxsResult:
