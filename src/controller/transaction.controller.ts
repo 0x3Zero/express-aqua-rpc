@@ -43,6 +43,9 @@ import {
 	Send_cron_txArgArgs,
 	Send_cron_txResult,
 	send_cron_tx,
+	Get_transactionsArgArgs,
+	Get_transactionsResult,
+	get_transactions,
 } from '../_aqua/transaction';
 
 export class TransactionController {
@@ -187,6 +190,16 @@ export class TransactionController {
 	): Promise<Get_transactionResult | undefined> {
 		try {
 			return await get_transaction(args[0]);
+		} catch (e) {
+			console.log(e);
+		}
+	}
+
+	async get_transactions(
+		args: Get_transactionsArgArgs
+	): Promise<Get_transactionsResult | undefined> {
+		try {
+			return await get_transactions(args);
 		} catch (e) {
 			console.log(e);
 		}
