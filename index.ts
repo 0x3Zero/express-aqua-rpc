@@ -24,7 +24,7 @@ for (let i = 0; i < methods.length; i++) {
 
 const app: Express = express();
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' }));
 app.use(
 	cors({
 		origin: '*',

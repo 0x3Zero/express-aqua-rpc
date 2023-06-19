@@ -698,6 +698,131 @@ export function send_cron_tx(...args: any) {
 }
 
  
+
+export function send_batch_transaction(
+    txs: { alias: string; data: string; data_key: string; method: string; nonce: number; public_key: string; signature: string; token_id: string; token_key: string; }[],
+    config?: {ttl?: number}
+): Promise<{ transaction_hash: string; }[]>;
+
+export function send_batch_transaction(
+    peer: FluencePeer,
+    txs: { alias: string; data: string; data_key: string; method: string; nonce: number; public_key: string; signature: string; token_id: string; token_key: string; }[],
+    config?: {ttl?: number}
+): Promise<{ transaction_hash: string; }[]>;
+
+export function send_batch_transaction(...args: any) {
+
+    let script = `
+                    (xor
+                     (seq
+                      (seq
+                       (seq
+                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                        (call %init_peer_id% ("getDataSrv" "txs") [] txs)
+                       )
+                       (xor
+                        (call -relay- ("transaction" "send_batch_transaction") [txs] results)
+                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       )
+                      )
+                      (xor
+                       (call %init_peer_id% ("callbackSrv" "response") [results])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                      )
+                     )
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
+                    )
+    `
+    return callFunction$$(
+        args,
+        {
+    "functionName" : "send_batch_transaction",
+    "arrow" : {
+        "tag" : "arrow",
+        "domain" : {
+            "tag" : "labeledProduct",
+            "fields" : {
+                "txs" : {
+                    "tag" : "array",
+                    "type" : {
+                        "tag" : "struct",
+                        "name" : "TransactionRequest",
+                        "fields" : {
+                            "method" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "nonce" : {
+                                "tag" : "scalar",
+                                "name" : "i64"
+                            },
+                            "data" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "signature" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "public_key" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "alias" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "data_key" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "token_id" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "token_key" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "codomain" : {
+            "tag" : "unlabeledProduct",
+            "items" : [
+                {
+                    "tag" : "array",
+                    "type" : {
+                        "tag" : "struct",
+                        "name" : "FdbResult",
+                        "fields" : {
+                            "transaction_hash" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "names" : {
+        "relay" : "-relay-",
+        "getDataSrv" : "getDataSrv",
+        "callbackSrv" : "callbackSrv",
+        "responseSrv" : "callbackSrv",
+        "responseFnName" : "response",
+        "errorHandlingSrv" : "errorHandlingSrv",
+        "errorFnName" : "error"
+    }
+},
+        script
+    )
+}
+
+ 
 export type Get_all_cronsResult = { crons: { address: string; chain: string; cron_id: number; meta_contract_id: string; node_url: string; status: number; token_type: string; topic: string; }[]; err_msg: string; success: boolean; }
 export function get_all_crons(
     config?: {ttl?: number}
