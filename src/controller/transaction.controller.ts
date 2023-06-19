@@ -46,6 +46,7 @@ import {
 	Get_transactionsArgArgs,
 	Get_transactionsResult,
 	get_transactions,
+	send_batch_transaction,
 } from '../_aqua/transaction';
 
 export class TransactionController {
@@ -240,6 +241,16 @@ export class TransactionController {
 	): Promise<Send_transactionResult | undefined> {
 		try {
 			return await send_transaction(args);
+		} catch (e) {
+			console.log(e);
+		}
+	}
+
+	async send_batch_transaction(
+		txs: Send_transactionArgArgs[]
+	): Promise<{ transaction_hash: string }[] | undefined> {
+		try {
+			return await send_batch_transaction(txs);
 		} catch (e) {
 			console.log(e);
 		}

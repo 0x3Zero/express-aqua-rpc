@@ -141,6 +141,11 @@ func search_metadatas(args:SearchMetadatas) -> FdbMetadatasResult:
         results <- Node.search_metadatas(args.query, args.ordering, args.from, args.to)
     <- results
 
+func send_batch_transaction(txs: []TransactionRequest) -> []FdbResult:
+    on HOST_PEER_ID:
+        results <- Node.send_batch_transaction(txs)
+    <- results
+
 func send_cron_tx(args: SendCronTx) -> FdbCronTxResult:
     on HOST_PEER_ID:
         results <- Node.send_cron_tx(args.cron_id, args.data_key, args.data, args.tx_block_number, args.tx_hash, args.token_id)
