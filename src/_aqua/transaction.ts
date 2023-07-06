@@ -17,7 +17,7 @@ import {
 // Services
 
 // Functions
-export type Get_transactionsArgArgs = { from: number; ordering: { column: string; sort: string; }[]; query: { column: string; query: string; }[]; to: number; } 
+export type Get_transactionsArgArgs = { from: number; ordering: { column: string; sort: string; }[]; query: { column: string; op: string; query: string; }[]; to: number; } 
 export type Get_transactionsResult = { err_msg: string; success: boolean; transactions: { alias: string; data: string; data_key: string; error_text: string; from_peer_id: string; hash: string; host_id: string; meta_contract_id: string; method: string; nonce: number; public_key: string; status: number; timestamp: number; token_id: string; token_key: string; }[]; }
 export function get_transactions(
     args: Get_transactionsArgArgs,
@@ -97,6 +97,10 @@ export function get_transactions(...args: any) {
                                 "name" : "TransactionQuery",
                                 "fields" : {
                                     "column" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "op" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
@@ -219,7 +223,7 @@ export function get_transactions(...args: any) {
 }
 
 export type Search_metadatasArgArgs = { from: number; ordering: { column: string; sort: string; }[]; query: { column: string; query: string; }[]; to: number; } 
-export type Search_metadatasResult = { err_msg: string; metadatas: { alias: string; cid: string; data_key: string; public_key: string; }[]; success: boolean; }
+export type Search_metadatasResult = { err_msg: string; metadatas: { alias: string; cid: string; data_key: string; hash: string; public_key: string; }[]; success: boolean; }
 export function search_metadatas(
     args: Search_metadatasArgArgs,
     config?: {ttl?: number}
@@ -333,7 +337,15 @@ export function search_metadatas(...args: any) {
                                 "tag" : "struct",
                                 "name" : "Metadata",
                                 "fields" : {
+                                    "public_key" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
                                     "alias" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "hash" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
@@ -342,10 +354,6 @@ export function search_metadatas(...args: any) {
                                         "name" : "string"
                                     },
                                     "data_key" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "public_key" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     }
@@ -1083,7 +1091,7 @@ export function get_all_cron_txs(...args: any) {
 }
 
  
-export type Get_metadatasResult = { err_msg: string; metadatas: { alias: string; cid: string; data_key: string; public_key: string; }[]; success: boolean; }
+export type Get_metadatasResult = { err_msg: string; metadatas: { alias: string; cid: string; data_key: string; hash: string; public_key: string; }[]; success: boolean; }
 export function get_metadatas(
     data_key: string,
     config?: {ttl?: number}
@@ -1150,7 +1158,15 @@ export function get_metadatas(...args: any) {
                                 "tag" : "struct",
                                 "name" : "Metadata",
                                 "fields" : {
+                                    "public_key" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
                                     "alias" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "hash" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
@@ -1159,10 +1175,6 @@ export function get_metadatas(...args: any) {
                                         "name" : "string"
                                     },
                                     "data_key" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "public_key" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     }
@@ -1414,7 +1426,7 @@ export function get_active_crons(...args: any) {
 }
 
  
-export type Get_metadataResult = { err_msg: string; metadata: { alias: string; cid: string; data_key: string; public_key: string; }; success: boolean; }
+export type Get_metadataResult = { err_msg: string; metadata: { alias: string; cid: string; data_key: string; hash: string; public_key: string; }; success: boolean; }
 export function get_metadata(
     data_key: string,
     public_key: string,
@@ -1497,7 +1509,15 @@ export function get_metadata(...args: any) {
                             "tag" : "struct",
                             "name" : "Metadata",
                             "fields" : {
+                                "public_key" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
                                 "alias" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "hash" : {
                                     "tag" : "scalar",
                                     "name" : "string"
                                 },
@@ -1506,10 +1526,6 @@ export function get_metadata(...args: any) {
                                     "name" : "string"
                                 },
                                 "data_key" : {
-                                    "tag" : "scalar",
-                                    "name" : "string"
-                                },
-                                "public_key" : {
                                     "tag" : "scalar",
                                     "name" : "string"
                                 }
