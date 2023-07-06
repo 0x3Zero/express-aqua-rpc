@@ -66,6 +66,7 @@ data FdbMetadataHistoryResult:
   history: []string
 
 data Metadata:
+  hash: string
   data_key: string
   alias: string
   cid: string
@@ -111,14 +112,6 @@ data FdbTransactionsResult:
   err_msg: string
   transactions: []Transaction
 
-data TransactionOrdering:
-  column: string
-  sort: string
-
-data TransactionQuery:
-  column: string
-  query: string
-
 data FinalMetadata:
   public_key: string
   alias: string
@@ -132,6 +125,15 @@ data MetadataQuery:
   column: string
   query: string
 
+data TransactionOrdering:
+  column: string
+  sort: string
+
+data TransactionQuery:
+  column: string
+  query: string
+  op: string
+
 data TransactionRequest:
   data_key: string
   token_key: string
@@ -144,7 +146,7 @@ data TransactionRequest:
   nonce: i64
 
 service Node("transaction"):
-  bind_meta_contract(transaction_hash: string)
+  bind_meta_contract(transaction_hash: string)  
   deserialize_fork(data: string) -> DataTypeFork
   get_active_crons() -> FdbCronsResult
   get_all_cron_txs() -> FdbCronTxsResult
@@ -166,7 +168,7 @@ service Node("transaction"):
   send_batch_transaction(txs: []TransactionRequest) -> []FdbResult
   send_cron_tx(cron_id: i64, data_key: string, data: string, tx_block_number: u64, tx_hash: string, token_id: string) -> FdbCronTxResult
   send_transaction(data_key: string, token_key: string, token_id: string, alias: string, public_key: string, signature: string, data: string, method: string, nonce: i64) -> FdbResult
-  set_clone(transaction_hash: string, meta_contract_id: string, on_metacontract_result: bool, data: string, final_error_msg: string)
-  set_cron(transaction_hash: string, data: string)
-  set_metadata(transaction_hash: string, meta_contract_id: string, on_metacontract_result: bool, metadatas: []FinalMetadata, final_error_msg: string)
-  set_metadata_cron(data_key: string, on_metacontract_result: bool, metadatas: []FinalMetadata)
+  set_clone(transaction_hash: string, meta_contract_id: string, on_metacontract_result: bool, data: string, final_error_msg: string)  
+  set_cron(transaction_hash: string, data: string)  
+  set_metadata(transaction_hash: string, meta_contract_id: string, on_metacontract_result: bool, metadatas: []FinalMetadata, final_error_msg: string)  
+  set_metadata_cron(data_key: string, on_metacontract_result: bool, metadatas: []FinalMetadata)  
