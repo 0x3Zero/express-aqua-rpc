@@ -15,6 +15,7 @@ data SendTransaction:
   data: string
   method:string 
   nonce: i64
+  timestamp: i64
 
 data SearchMetadatas:
   query: []MetadataQuery
@@ -43,12 +44,13 @@ data SearchCronTx:
   topic: string
 
 data SendCronTx:
-  cron_id: i64
+  hash: string
   data_key: string
   data: string 
-  tx_block_number: u64
-  tx_hash: string
+  tx_block_number: u64 
+  tx_hash: string 
   token_id: string
+ 
 
 data GetTransactions:
   query: []TransactionQuery
@@ -148,10 +150,10 @@ func send_batch_transaction(txs: []TransactionRequest) -> []FdbResult:
 
 func send_cron_tx(args: SendCronTx) -> FdbCronTxResult:
     on HOST_PEER_ID:
-        results <- Node.send_cron_tx(args.cron_id, args.data_key, args.data, args.tx_block_number, args.tx_hash, args.token_id)
+        results <- Node.send_cron_tx(args.hash, args.data_key, args.data, args.tx_block_number, args.tx_hash, args.token_id)
     <- results
 
 func send_transaction(args: SendTransaction) -> FdbResult:
     on HOST_PEER_ID:
-        results <- Node.send_transaction(args.data_key, args.token_key, args.token_id, args.alias, args.public_key, args.signature, args.data, args.method, args.nonce)
+        results <- Node.send_transaction(args.data_key, args.token_key, args.token_id, args.alias, args.public_key, args.signature, args.data, args.method, args.nonce, args.timestamp)
     <- results
