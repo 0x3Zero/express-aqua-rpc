@@ -18,7 +18,7 @@ import {
 
 // Functions
 export type Get_transactionsArgArgs = { from: number; ordering: { column: string; sort: string; }[]; query: { column: string; op: string; query: string; }[]; to: number; } 
-export type Get_transactionsResult = { err_msg: string; success: boolean; transactions: { alias: string; data: string; data_key: string; error_text: string; from_peer_id: string; hash: string; host_id: string; meta_contract_id: string; method: string; nonce: number; public_key: string; status: number; timestamp: number; token_id: string; token_key: string; }[]; }
+export type Get_transactionsResult = { err_msg: string; success: boolean; transactions: { alias: string; data: string; data_key: string; error_text: string; from_peer_id: string; hash: string; host_id: string; meta_contract_id: string; method: string; node_timestamp: number; nonce: number; public_key: string; status: number; timestamp: number; token_id: string; token_key: string; }[]; }
 export function get_transactions(
     args: Get_transactionsArgArgs,
     config?: {ttl?: number}
@@ -146,7 +146,7 @@ export function get_transactions(...args: any) {
                                     },
                                     "timestamp" : {
                                         "tag" : "scalar",
-                                        "name" : "u64"
+                                        "name" : "i64"
                                     },
                                     "data" : {
                                         "tag" : "scalar",
@@ -172,10 +172,6 @@ export function get_transactions(...args: any) {
                                         "tag" : "scalar",
                                         "name" : "i64"
                                     },
-                                    "error_text" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
                                     "nonce" : {
                                         "tag" : "scalar",
                                         "name" : "i64"
@@ -191,6 +187,14 @@ export function get_transactions(...args: any) {
                                     "token_key" : {
                                         "tag" : "scalar",
                                         "name" : "string"
+                                    },
+                                    "error_text" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "node_timestamp" : {
+                                        "tag" : "scalar",
+                                        "name" : "u64"
                                     },
                                     "meta_contract_id" : {
                                         "tag" : "scalar",
@@ -222,7 +226,7 @@ export function get_transactions(...args: any) {
     )
 }
 
-export type Search_metadatasArgArgs = { from: number; ordering: { column: string; sort: string; }[]; query: { column: string; query: string; }[]; to: number; } 
+export type Search_metadatasArgArgs = { from: number; ordering: { column: string; sort: string; }[]; query: { column: string; op: string; query: string; }[]; to: number; } 
 export type Search_metadatasResult = { err_msg: string; metadatas: { alias: string; cid: string; data_key: string; hash: string; public_key: string; }[]; success: boolean; }
 export function search_metadatas(
     args: Search_metadatasArgArgs,
@@ -305,6 +309,10 @@ export function search_metadatas(...args: any) {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
+                                    "op" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
                                     "query" : {
                                         "tag" : "scalar",
                                         "name" : "string"
@@ -384,7 +392,7 @@ export function search_metadatas(...args: any) {
 }
 
  
-export type Get_pending_transactionsResult = { err_msg: string; success: boolean; transactions: { alias: string; data: string; data_key: string; error_text: string; from_peer_id: string; hash: string; host_id: string; meta_contract_id: string; method: string; nonce: number; public_key: string; status: number; timestamp: number; token_id: string; token_key: string; }[]; }
+export type Get_pending_transactionsResult = { err_msg: string; success: boolean; transactions: { alias: string; data: string; data_key: string; error_text: string; from_peer_id: string; hash: string; host_id: string; meta_contract_id: string; method: string; node_timestamp: number; nonce: number; public_key: string; status: number; timestamp: number; token_id: string; token_key: string; }[]; }
 export function get_pending_transactions(
     config?: {ttl?: number}
 ): Promise<Get_pending_transactionsResult>;
@@ -453,7 +461,7 @@ export function get_pending_transactions(...args: any) {
                                     },
                                     "timestamp" : {
                                         "tag" : "scalar",
-                                        "name" : "u64"
+                                        "name" : "i64"
                                     },
                                     "data" : {
                                         "tag" : "scalar",
@@ -479,10 +487,6 @@ export function get_pending_transactions(...args: any) {
                                         "tag" : "scalar",
                                         "name" : "i64"
                                     },
-                                    "error_text" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
                                     "nonce" : {
                                         "tag" : "scalar",
                                         "name" : "i64"
@@ -498,6 +502,14 @@ export function get_pending_transactions(...args: any) {
                                     "token_key" : {
                                         "tag" : "scalar",
                                         "name" : "string"
+                                    },
+                                    "error_text" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "node_timestamp" : {
+                                        "tag" : "scalar",
+                                        "name" : "u64"
                                     },
                                     "meta_contract_id" : {
                                         "tag" : "scalar",
@@ -529,8 +541,8 @@ export function get_pending_transactions(...args: any) {
     )
 }
 
-export type Send_cron_txArgArgs = { cron_id: number; data: string; data_key: string; token_id: string; tx_block_number: number; tx_hash: string; } 
-export type Send_cron_txResult = { cron_tx: { address: string; chain: string; data: string; data_key: string; error_text: string; hash: string; meta_contract_id: string; status: number; timestamp: number; token_id: string; token_type: string; topic: string; tx_block_number: number; tx_hash: string; }; err_msg: string; success: boolean; }
+export type Send_cron_txArgArgs = { data: string; data_key: string; hash: string; token_id: string; tx_block_number: number; tx_hash: string; } 
+export type Send_cron_txResult = { cron_tx: { address: string; chain: string; data: string; data_key: string; error_text: string; hash: string; meta_contract_id: string; status: number; timestamp: number; token_id: string; token_key: string; token_type: string; topic: string; tx_block_number: number; tx_hash: string; }; err_msg: string; success: boolean; }
 export function send_cron_tx(
     args: Send_cron_txArgArgs,
     config?: {ttl?: number}
@@ -555,7 +567,7 @@ export function send_cron_tx(...args: any) {
                        (xor
                         (seq
                          (null)
-                         (call -relay- ("transaction" "send_cron_tx") [args.$.cron_id! args.$.data_key! args.$.data! args.$.tx_block_number! args.$.tx_hash! args.$.token_id!] results)
+                         (call -relay- ("transaction" "send_cron_tx") [args.$.hash! args.$.data_key! args.$.data! args.$.tx_block_number! args.$.tx_hash! args.$.token_id!] results)
                         )
                         (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                        )
@@ -581,15 +593,15 @@ export function send_cron_tx(...args: any) {
                     "tag" : "struct",
                     "name" : "SendCronTx",
                     "fields" : {
-                        "cron_id" : {
-                            "tag" : "scalar",
-                            "name" : "i64"
-                        },
                         "data" : {
                             "tag" : "scalar",
                             "name" : "string"
                         },
                         "tx_hash" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "hash" : {
                             "tag" : "scalar",
                             "name" : "string"
                         },
@@ -644,10 +656,6 @@ export function send_cron_tx(...args: any) {
                                     "tag" : "scalar",
                                     "name" : "i64"
                                 },
-                                "token_id" : {
-                                    "tag" : "scalar",
-                                    "name" : "string"
-                                },
                                 "error_text" : {
                                     "tag" : "scalar",
                                     "name" : "string"
@@ -657,6 +665,14 @@ export function send_cron_tx(...args: any) {
                                     "name" : "string"
                                 },
                                 "chain" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "token_id" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "token_key" : {
                                     "tag" : "scalar",
                                     "name" : "string"
                                 },
@@ -708,13 +724,13 @@ export function send_cron_tx(...args: any) {
  
 
 export function send_batch_transaction(
-    txs: { alias: string; data: string; data_key: string; method: string; nonce: number; public_key: string; signature: string; token_id: string; token_key: string; }[],
+    txs: { alias: string; data: string; data_key: string; method: string; nonce: number; public_key: string; signature: string; timestamp: number; token_id: string; token_key: string; }[],
     config?: {ttl?: number}
 ): Promise<{ transaction_hash: string; }[]>;
 
 export function send_batch_transaction(
     peer: FluencePeer,
-    txs: { alias: string; data: string; data_key: string; method: string; nonce: number; public_key: string; signature: string; token_id: string; token_key: string; }[],
+    txs: { alias: string; data: string; data_key: string; method: string; nonce: number; public_key: string; signature: string; timestamp: number; token_id: string; token_key: string; }[],
     config?: {ttl?: number}
 ): Promise<{ transaction_hash: string; }[]>;
 
@@ -759,6 +775,10 @@ export function send_batch_transaction(...args: any) {
                             "method" : {
                                 "tag" : "scalar",
                                 "name" : "string"
+                            },
+                            "timestamp" : {
+                                "tag" : "scalar",
+                                "name" : "i64"
                             },
                             "nonce" : {
                                 "tag" : "scalar",
@@ -831,7 +851,7 @@ export function send_batch_transaction(...args: any) {
 }
 
  
-export type Get_all_cronsResult = { crons: { address: string; chain: string; cron_id: number; meta_contract_id: string; node_url: string; status: number; token_type: string; topic: string; }[]; err_msg: string; success: boolean; }
+export type Get_all_cronsResult = { crons: { address: string; chain: string; hash: string; meta_contract_id: string; node_url: string; public_key: string; status: number; token_key: string; token_type: string; topic: string; }[]; err_msg: string; success: boolean; }
 export function get_all_crons(
     config?: {ttl?: number}
 ): Promise<Get_all_cronsResult>;
@@ -886,10 +906,6 @@ export function get_all_crons(...args: any) {
                                 "tag" : "struct",
                                 "name" : "CronResult",
                                 "fields" : {
-                                    "cron_id" : {
-                                        "tag" : "scalar",
-                                        "name" : "i64"
-                                    },
                                     "node_url" : {
                                         "tag" : "scalar",
                                         "name" : "string"
@@ -898,9 +914,21 @@ export function get_all_crons(...args: any) {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
+                                    "public_key" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "hash" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
                                     "status" : {
                                         "tag" : "scalar",
                                         "name" : "i64"
+                                    },
+                                    "token_key" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
                                     },
                                     "address" : {
                                         "tag" : "scalar",
@@ -949,7 +977,7 @@ export function get_all_crons(...args: any) {
 }
 
  
-export type Get_all_cron_txsResult = { cron_txs: { address: string; chain: string; data: string; data_key: string; error_text: string; hash: string; meta_contract_id: string; status: number; timestamp: number; token_id: string; token_type: string; topic: string; tx_block_number: number; tx_hash: string; }[]; err_msg: string; success: boolean; }
+export type Get_all_cron_txsResult = { cron_txs: { address: string; chain: string; data: string; data_key: string; error_text: string; hash: string; meta_contract_id: string; status: number; timestamp: number; token_id: string; token_key: string; token_type: string; topic: string; tx_block_number: number; tx_hash: string; }[]; err_msg: string; success: boolean; }
 export function get_all_cron_txs(
     config?: {ttl?: number}
 ): Promise<Get_all_cron_txsResult>;
@@ -1028,10 +1056,6 @@ export function get_all_cron_txs(...args: any) {
                                         "tag" : "scalar",
                                         "name" : "i64"
                                     },
-                                    "token_id" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
                                     "error_text" : {
                                         "tag" : "scalar",
                                         "name" : "string"
@@ -1041,6 +1065,14 @@ export function get_all_cron_txs(...args: any) {
                                         "name" : "string"
                                     },
                                     "chain" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "token_id" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "token_key" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
@@ -1308,7 +1340,7 @@ export function get_meta_contract(...args: any) {
 }
 
  
-export type Get_active_cronsResult = { crons: { address: string; chain: string; cron_id: number; meta_contract_id: string; node_url: string; status: number; token_type: string; topic: string; }[]; err_msg: string; success: boolean; }
+export type Get_active_cronsResult = { crons: { address: string; chain: string; hash: string; meta_contract_id: string; node_url: string; public_key: string; status: number; token_key: string; token_type: string; topic: string; }[]; err_msg: string; success: boolean; }
 export function get_active_crons(
     config?: {ttl?: number}
 ): Promise<Get_active_cronsResult>;
@@ -1363,10 +1395,6 @@ export function get_active_crons(...args: any) {
                                 "tag" : "struct",
                                 "name" : "CronResult",
                                 "fields" : {
-                                    "cron_id" : {
-                                        "tag" : "scalar",
-                                        "name" : "i64"
-                                    },
                                     "node_url" : {
                                         "tag" : "scalar",
                                         "name" : "string"
@@ -1375,9 +1403,21 @@ export function get_active_crons(...args: any) {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
+                                    "public_key" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "hash" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
                                     "status" : {
                                         "tag" : "scalar",
                                         "name" : "i64"
+                                    },
+                                    "token_key" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
                                     },
                                     "address" : {
                                         "tag" : "scalar",
@@ -1555,7 +1595,7 @@ export function get_metadata(...args: any) {
 }
 
 export type Get_success_transactionsArgArgs = { from: number; to: number; } 
-export type Get_success_transactionsResult = { err_msg: string; success: boolean; transactions: { alias: string; data: string; data_key: string; error_text: string; from_peer_id: string; hash: string; host_id: string; meta_contract_id: string; method: string; nonce: number; public_key: string; status: number; timestamp: number; token_id: string; token_key: string; }[]; }
+export type Get_success_transactionsResult = { err_msg: string; success: boolean; transactions: { alias: string; data: string; data_key: string; error_text: string; from_peer_id: string; hash: string; host_id: string; meta_contract_id: string; method: string; node_timestamp: number; nonce: number; public_key: string; status: number; timestamp: number; token_id: string; token_key: string; }[]; }
 export function get_success_transactions(
     args: Get_success_transactionsArgArgs,
     config?: {ttl?: number}
@@ -1645,7 +1685,7 @@ export function get_success_transactions(...args: any) {
                                     },
                                     "timestamp" : {
                                         "tag" : "scalar",
-                                        "name" : "u64"
+                                        "name" : "i64"
                                     },
                                     "data" : {
                                         "tag" : "scalar",
@@ -1671,10 +1711,6 @@ export function get_success_transactions(...args: any) {
                                         "tag" : "scalar",
                                         "name" : "i64"
                                     },
-                                    "error_text" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
                                     "nonce" : {
                                         "tag" : "scalar",
                                         "name" : "i64"
@@ -1690,6 +1726,14 @@ export function get_success_transactions(...args: any) {
                                     "token_key" : {
                                         "tag" : "scalar",
                                         "name" : "string"
+                                    },
+                                    "error_text" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "node_timestamp" : {
+                                        "tag" : "scalar",
+                                        "name" : "u64"
                                     },
                                     "meta_contract_id" : {
                                         "tag" : "scalar",
@@ -1810,7 +1854,7 @@ export function deserialize_fork(...args: any) {
     )
 }
 
-export type Send_transactionArgArgs = { alias: string; data: string; data_key: string; method: string; nonce: number; public_key: string; signature: string; token_id: string; token_key: string; } 
+export type Send_transactionArgArgs = { alias: string; data: string; data_key: string; method: string; nonce: number; public_key: string; signature: string; timestamp: number; token_id: string; token_key: string; } 
 export type Send_transactionResult = { transaction_hash: string; }
 export function send_transaction(
     args: Send_transactionArgArgs,
@@ -1836,7 +1880,7 @@ export function send_transaction(...args: any) {
                        (xor
                         (seq
                          (null)
-                         (call -relay- ("transaction" "send_transaction") [args.$.data_key! args.$.token_key! args.$.token_id! args.$.alias! args.$.public_key! args.$.signature! args.$.data! args.$.method! args.$.nonce!] results)
+                         (call -relay- ("transaction" "send_transaction") [args.$.data_key! args.$.token_key! args.$.token_id! args.$.alias! args.$.public_key! args.$.signature! args.$.data! args.$.method! args.$.nonce! args.$.timestamp!] results)
                         )
                         (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                        )
@@ -1865,6 +1909,10 @@ export function send_transaction(...args: any) {
                         "method" : {
                             "tag" : "scalar",
                             "name" : "string"
+                        },
+                        "timestamp" : {
+                            "tag" : "scalar",
+                            "name" : "i64"
                         },
                         "nonce" : {
                             "tag" : "scalar",
@@ -1933,7 +1981,7 @@ export function send_transaction(...args: any) {
 }
 
  
-export type Get_transactionResult = { err_msg: string; success: boolean; transaction: { alias: string; data: string; data_key: string; error_text: string; from_peer_id: string; hash: string; host_id: string; meta_contract_id: string; method: string; nonce: number; public_key: string; status: number; timestamp: number; token_id: string; token_key: string; }; }
+export type Get_transactionResult = { err_msg: string; success: boolean; transaction: { alias: string; data: string; data_key: string; error_text: string; from_peer_id: string; hash: string; host_id: string; meta_contract_id: string; method: string; node_timestamp: number; nonce: number; public_key: string; status: number; timestamp: number; token_id: string; token_key: string; }; }
 export function get_transaction(
     hash: string,
     config?: {ttl?: number}
@@ -2008,7 +2056,7 @@ export function get_transaction(...args: any) {
                                 },
                                 "timestamp" : {
                                     "tag" : "scalar",
-                                    "name" : "u64"
+                                    "name" : "i64"
                                 },
                                 "data" : {
                                     "tag" : "scalar",
@@ -2034,10 +2082,6 @@ export function get_transaction(...args: any) {
                                     "tag" : "scalar",
                                     "name" : "i64"
                                 },
-                                "error_text" : {
-                                    "tag" : "scalar",
-                                    "name" : "string"
-                                },
                                 "nonce" : {
                                     "tag" : "scalar",
                                     "name" : "i64"
@@ -2053,6 +2097,14 @@ export function get_transaction(...args: any) {
                                 "token_key" : {
                                     "tag" : "scalar",
                                     "name" : "string"
+                                },
+                                "error_text" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "node_timestamp" : {
+                                    "tag" : "scalar",
+                                    "name" : "u64"
                                 },
                                 "meta_contract_id" : {
                                     "tag" : "scalar",
@@ -2271,7 +2323,7 @@ export function get_metadata_with_history(...args: any) {
 }
 
 export type Get_cron_tx_by_tx_hashArgArgs = { address: string; chain: string; topic: string; tx_hash: string; } 
-export type Get_cron_tx_by_tx_hashResult = { cron_tx: { address: string; chain: string; data: string; data_key: string; error_text: string; hash: string; meta_contract_id: string; status: number; timestamp: number; token_id: string; token_type: string; topic: string; tx_block_number: number; tx_hash: string; }; err_msg: string; success: boolean; }
+export type Get_cron_tx_by_tx_hashResult = { cron_tx: { address: string; chain: string; data: string; data_key: string; error_text: string; hash: string; meta_contract_id: string; status: number; timestamp: number; token_id: string; token_key: string; token_type: string; topic: string; tx_block_number: number; tx_hash: string; }; err_msg: string; success: boolean; }
 export function get_cron_tx_by_tx_hash(
     args: Get_cron_tx_by_tx_hashArgArgs,
     config?: {ttl?: number}
@@ -2377,10 +2429,6 @@ export function get_cron_tx_by_tx_hash(...args: any) {
                                     "tag" : "scalar",
                                     "name" : "i64"
                                 },
-                                "token_id" : {
-                                    "tag" : "scalar",
-                                    "name" : "string"
-                                },
                                 "error_text" : {
                                     "tag" : "scalar",
                                     "name" : "string"
@@ -2390,6 +2438,14 @@ export function get_cron_tx_by_tx_hash(...args: any) {
                                     "name" : "string"
                                 },
                                 "chain" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "token_id" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "token_key" : {
                                     "tag" : "scalar",
                                     "name" : "string"
                                 },
@@ -2531,7 +2587,7 @@ export function get_cron_tx_latest_block(...args: any) {
 }
 
 export type Search_cron_txArgArgs = { address: string; chain: string; topic: string; } 
-export type Search_cron_txResult = { cron_txs: { address: string; chain: string; data: string; data_key: string; error_text: string; hash: string; meta_contract_id: string; status: number; timestamp: number; token_id: string; token_type: string; topic: string; tx_block_number: number; tx_hash: string; }[]; err_msg: string; success: boolean; }
+export type Search_cron_txResult = { cron_txs: { address: string; chain: string; data: string; data_key: string; error_text: string; hash: string; meta_contract_id: string; status: number; timestamp: number; token_id: string; token_key: string; token_type: string; topic: string; tx_block_number: number; tx_hash: string; }[]; err_msg: string; success: boolean; }
 export function search_cron_tx(
     args: Search_cron_txArgArgs,
     config?: {ttl?: number}
@@ -2635,10 +2691,6 @@ export function search_cron_tx(...args: any) {
                                         "tag" : "scalar",
                                         "name" : "i64"
                                     },
-                                    "token_id" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
                                     "error_text" : {
                                         "tag" : "scalar",
                                         "name" : "string"
@@ -2648,6 +2700,14 @@ export function search_cron_tx(...args: any) {
                                         "name" : "string"
                                     },
                                     "chain" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "token_id" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "token_key" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
