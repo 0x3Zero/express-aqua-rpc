@@ -5,18 +5,6 @@ data Metadata:
   public_key: string
   alias: string
 
-data SendTransaction:
-  data_key: string 
-  token_key: string 
-  token_id: string 
-  alias: string 
-  public_key: string 
-  signature: string 
-  data: string
-  method:string 
-  nonce: i64
-  timestamp: i64
-
 data SearchMetadatas:
   query: []MetadataQuery
   ordering: []MetadataOrdering
@@ -153,7 +141,7 @@ func send_cron_tx(args: SendCronTx) -> FdbCronTxResult:
         results <- Node.send_cron_tx(args.hash, args.data_key, args.data, args.tx_block_number, args.tx_hash, args.token_id)
     <- results
 
-func send_transaction(args: SendTransaction) -> FdbResult:
+func send_transaction(args: TransactionRequest) -> FdbResult:
     on HOST_PEER_ID:
-        results <- Node.send_transaction(args.data_key, args.token_key, args.token_id, args.alias, args.public_key, args.signature, args.data, args.method, args.nonce, args.timestamp)
+        results <- Node.send_transaction(args.data_key, args.token_key, args.token_id, args.alias, args.public_key, args.signature, args.data, args.method, args.nonce, args.version)
     <- results
