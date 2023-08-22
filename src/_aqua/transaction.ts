@@ -17,16 +17,173 @@ import {
 // Services
 
 // Functions
-export type Get_transactionsArgArgs = { from: number; ordering: { column: string; sort: string; }[]; query: { column: string; op: string; query: string; }[]; to: number; } 
-export type Get_transactionsResult = { err_msg: string; success: boolean; transactions: { alias: string; data: string; data_key: string; error_text: string; from_peer_id: string; hash: string; host_id: string; meta_contract_id: string; method: string; nonce: number; public_key: string; status: number; timestamp: number; token_id: string; token_key: string; version: number; }[]; }
+ 
+export type Get_transactionResult = { err_msg: string; success: boolean; transaction: { alias: string; chain_id: string; data: string; data_key: string; hash: string; mcdata: string; meta_contract_id: string; method: string; public_key: string; status: number; timestamp: number; token_address: string; token_id: string; token_key: string; version: string; }; }
+export function get_transaction(
+    hash: string,
+    config?: {ttl?: number}
+): Promise<Get_transactionResult>;
+
+export function get_transaction(
+    peer: FluencePeer,
+    hash: string,
+    config?: {ttl?: number}
+): Promise<Get_transactionResult>;
+
+export function get_transaction(...args: any) {
+
+    let script = `
+                    (xor
+                     (seq
+                      (seq
+                       (seq
+                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                        (call %init_peer_id% ("getDataSrv" "hash") [] hash)
+                       )
+                       (xor
+                        (call -relay- ("transaction" "get_transaction") [hash] results)
+                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       )
+                      )
+                      (xor
+                       (call %init_peer_id% ("callbackSrv" "response") [results])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                      )
+                     )
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
+                    )
+    `
+    return callFunction$$(
+        args,
+        {
+    "functionName" : "get_transaction",
+    "arrow" : {
+        "tag" : "arrow",
+        "domain" : {
+            "tag" : "labeledProduct",
+            "fields" : {
+                "hash" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                }
+            }
+        },
+        "codomain" : {
+            "tag" : "unlabeledProduct",
+            "items" : [
+                {
+                    "tag" : "struct",
+                    "name" : "FdbTransactionResult",
+                    "fields" : {
+                        "err_msg" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "success" : {
+                            "tag" : "scalar",
+                            "name" : "bool"
+                        },
+                        "transaction" : {
+                            "tag" : "struct",
+                            "name" : "Transaction",
+                            "fields" : {
+                                "method" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "timestamp" : {
+                                    "tag" : "scalar",
+                                    "name" : "u64"
+                                },
+                                "mcdata" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "public_key" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "hash" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "status" : {
+                                    "tag" : "scalar",
+                                    "name" : "i64"
+                                },
+                                "chain_id" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "token_address" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "data" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "alias" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "version" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "token_id" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "token_key" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "meta_contract_id" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "data_key" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "names" : {
+        "relay" : "-relay-",
+        "getDataSrv" : "getDataSrv",
+        "callbackSrv" : "callbackSrv",
+        "responseSrv" : "callbackSrv",
+        "responseFnName" : "response",
+        "errorHandlingSrv" : "errorHandlingSrv",
+        "errorFnName" : "error"
+    }
+},
+        script
+    )
+}
+
+ 
+export type Get_transactionsResult = { err_msg: string; success: boolean; transactions: { alias: string; chain_id: string; data: string; data_key: string; hash: string; mcdata: string; meta_contract_id: string; method: string; public_key: string; status: number; timestamp: number; token_address: string; token_id: string; token_key: string; version: string; }[]; }
 export function get_transactions(
-    args: Get_transactionsArgArgs,
+    query: { column: string; op: string; query: string; }[],
+    ordering: { column: string; sort: string; }[],
+    from: number,
+    to: number,
     config?: {ttl?: number}
 ): Promise<Get_transactionsResult>;
 
 export function get_transactions(
     peer: FluencePeer,
-    args: Get_transactionsArgArgs,
+    query: { column: string; op: string; query: string; }[],
+    ordering: { column: string; sort: string; }[],
+    from: number,
+    to: number,
     config?: {ttl?: number}
 ): Promise<Get_transactionsResult>;
 
@@ -37,14 +194,20 @@ export function get_transactions(...args: any) {
                      (seq
                       (seq
                        (seq
-                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                        (call %init_peer_id% ("getDataSrv" "args") [] args)
+                        (seq
+                         (seq
+                          (seq
+                           (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                           (call %init_peer_id% ("getDataSrv" "query") [] query)
+                          )
+                          (call %init_peer_id% ("getDataSrv" "ordering") [] ordering)
+                         )
+                         (call %init_peer_id% ("getDataSrv" "from") [] from)
+                        )
+                        (call %init_peer_id% ("getDataSrv" "to") [] to)
                        )
                        (xor
-                        (seq
-                         (null)
-                         (call -relay- ("transaction" "get_transactions") [args.$.query! args.$.ordering! args.$.from! args.$.to!] results)
-                        )
+                        (call -relay- ("transaction" "get_transactions") [query ordering from to] results)
                         (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                        )
                       )
@@ -65,57 +228,51 @@ export function get_transactions(...args: any) {
         "domain" : {
             "tag" : "labeledProduct",
             "fields" : {
-                "args" : {
-                    "tag" : "struct",
-                    "name" : "GetTransactions",
-                    "fields" : {
-                        "from" : {
-                            "tag" : "scalar",
-                            "name" : "u32"
-                        },
-                        "ordering" : {
-                            "tag" : "array",
-                            "type" : {
-                                "tag" : "struct",
-                                "name" : "TransactionOrdering",
-                                "fields" : {
-                                    "column" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "sort" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    }
-                                }
+                "query" : {
+                    "tag" : "array",
+                    "type" : {
+                        "tag" : "struct",
+                        "name" : "TransactionQuery",
+                        "fields" : {
+                            "column" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "op" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "query" : {
+                                "tag" : "scalar",
+                                "name" : "string"
                             }
-                        },
-                        "query" : {
-                            "tag" : "array",
-                            "type" : {
-                                "tag" : "struct",
-                                "name" : "TransactionQuery",
-                                "fields" : {
-                                    "column" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "op" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "query" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    }
-                                }
-                            }
-                        },
-                        "to" : {
-                            "tag" : "scalar",
-                            "name" : "u32"
                         }
                     }
+                },
+                "ordering" : {
+                    "tag" : "array",
+                    "type" : {
+                        "tag" : "struct",
+                        "name" : "TransactionOrdering",
+                        "fields" : {
+                            "column" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "sort" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            }
+                        }
+                    }
+                },
+                "from" : {
+                    "tag" : "scalar",
+                    "name" : "u32"
+                },
+                "to" : {
+                    "tag" : "scalar",
+                    "name" : "u32"
                 }
             }
         },
@@ -148,7 +305,7 @@ export function get_transactions(...args: any) {
                                         "tag" : "scalar",
                                         "name" : "u64"
                                     },
-                                    "data" : {
+                                    "mcdata" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
@@ -160,23 +317,19 @@ export function get_transactions(...args: any) {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
-                                    "host_id" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
                                     "status" : {
                                         "tag" : "scalar",
                                         "name" : "i64"
                                     },
-                                    "error_text" : {
+                                    "chain_id" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
-                                    "nonce" : {
+                                    "token_address" : {
                                         "tag" : "scalar",
-                                        "name" : "i64"
+                                        "name" : "string"
                                     },
-                                    "from_peer_id" : {
+                                    "data" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
@@ -186,7 +339,7 @@ export function get_transactions(...args: any) {
                                     },
                                     "version" : {
                                         "tag" : "scalar",
-                                        "name" : "i64"
+                                        "name" : "string"
                                     },
                                     "token_id" : {
                                         "tag" : "scalar",
@@ -226,34 +379,36 @@ export function get_transactions(...args: any) {
     )
 }
 
-export type Search_metadatasArgArgs = { from: number; ordering: { column: string; sort: string; }[]; query: { column: string; op: string; query: string; }[]; to: number; } 
-export type Search_metadatasResult = { err_msg: string; metadatas: { alias: string; cid: string; data_key: string; hash: string; public_key: string; }[]; success: boolean; }
-export function search_metadatas(
-    args: Search_metadatasArgArgs,
+ 
+export type Get_complete_transactionsResult = { err_msg: string; success: boolean; transactions: { alias: string; chain_id: string; data: string; data_key: string; hash: string; mcdata: string; meta_contract_id: string; method: string; public_key: string; status: number; timestamp: number; token_address: string; token_id: string; token_key: string; version: string; }[]; }
+export function get_complete_transactions(
+    from: number,
+    to: number,
     config?: {ttl?: number}
-): Promise<Search_metadatasResult>;
+): Promise<Get_complete_transactionsResult>;
 
-export function search_metadatas(
+export function get_complete_transactions(
     peer: FluencePeer,
-    args: Search_metadatasArgArgs,
+    from: number,
+    to: number,
     config?: {ttl?: number}
-): Promise<Search_metadatasResult>;
+): Promise<Get_complete_transactionsResult>;
 
-export function search_metadatas(...args: any) {
+export function get_complete_transactions(...args: any) {
 
     let script = `
                     (xor
                      (seq
                       (seq
                        (seq
-                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                        (call %init_peer_id% ("getDataSrv" "args") [] args)
+                        (seq
+                         (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                         (call %init_peer_id% ("getDataSrv" "from") [] from)
+                        )
+                        (call %init_peer_id% ("getDataSrv" "to") [] to)
                        )
                        (xor
-                        (seq
-                         (null)
-                         (call -relay- ("transaction" "search_metadatas") [args.$.query! args.$.ordering! args.$.from! args.$.to!] results)
-                        )
+                        (call -relay- ("transaction" "get_complete_transactions") [from to] results)
                         (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                        )
                       )
@@ -268,63 +423,19 @@ export function search_metadatas(...args: any) {
     return callFunction$$(
         args,
         {
-    "functionName" : "search_metadatas",
+    "functionName" : "get_complete_transactions",
     "arrow" : {
         "tag" : "arrow",
         "domain" : {
             "tag" : "labeledProduct",
             "fields" : {
-                "args" : {
-                    "tag" : "struct",
-                    "name" : "SearchMetadatas",
-                    "fields" : {
-                        "from" : {
-                            "tag" : "scalar",
-                            "name" : "u32"
-                        },
-                        "ordering" : {
-                            "tag" : "array",
-                            "type" : {
-                                "tag" : "struct",
-                                "name" : "MetadataOrdering",
-                                "fields" : {
-                                    "column" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "sort" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    }
-                                }
-                            }
-                        },
-                        "query" : {
-                            "tag" : "array",
-                            "type" : {
-                                "tag" : "struct",
-                                "name" : "MetadataQuery",
-                                "fields" : {
-                                    "column" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "op" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "query" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    }
-                                }
-                            }
-                        },
-                        "to" : {
-                            "tag" : "scalar",
-                            "name" : "u32"
-                        }
-                    }
+                "from" : {
+                    "tag" : "scalar",
+                    "name" : "i64"
+                },
+                "to" : {
+                    "tag" : "scalar",
+                    "name" : "i64"
                 }
             }
         },
@@ -333,23 +444,35 @@ export function search_metadatas(...args: any) {
             "items" : [
                 {
                     "tag" : "struct",
-                    "name" : "FdbMetadatasResult",
+                    "name" : "FdbTransactionsResult",
                     "fields" : {
                         "err_msg" : {
                             "tag" : "scalar",
                             "name" : "string"
                         },
-                        "metadatas" : {
+                        "success" : {
+                            "tag" : "scalar",
+                            "name" : "bool"
+                        },
+                        "transactions" : {
                             "tag" : "array",
                             "type" : {
                                 "tag" : "struct",
-                                "name" : "Metadata",
+                                "name" : "Transaction",
                                 "fields" : {
-                                    "public_key" : {
+                                    "method" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
-                                    "alias" : {
+                                    "timestamp" : {
+                                        "tag" : "scalar",
+                                        "name" : "u64"
+                                    },
+                                    "mcdata" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "public_key" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
@@ -357,7 +480,39 @@ export function search_metadatas(...args: any) {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
-                                    "cid" : {
+                                    "status" : {
+                                        "tag" : "scalar",
+                                        "name" : "i64"
+                                    },
+                                    "chain_id" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "token_address" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "data" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "alias" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "version" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "token_id" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "token_key" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "meta_contract_id" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
@@ -367,10 +522,6 @@ export function search_metadatas(...args: any) {
                                     }
                                 }
                             }
-                        },
-                        "success" : {
-                            "tag" : "scalar",
-                            "name" : "bool"
                         }
                     }
                 }
@@ -392,7 +543,7 @@ export function search_metadatas(...args: any) {
 }
 
  
-export type Get_pending_transactionsResult = { err_msg: string; success: boolean; transactions: { alias: string; data: string; data_key: string; error_text: string; from_peer_id: string; hash: string; host_id: string; meta_contract_id: string; method: string; nonce: number; public_key: string; status: number; timestamp: number; token_id: string; token_key: string; version: number; }[]; }
+export type Get_pending_transactionsResult = { err_msg: string; success: boolean; transactions: { alias: string; chain_id: string; data: string; data_key: string; hash: string; mcdata: string; meta_contract_id: string; method: string; public_key: string; status: number; timestamp: number; token_address: string; token_id: string; token_key: string; version: string; }[]; }
 export function get_pending_transactions(
     config?: {ttl?: number}
 ): Promise<Get_pending_transactionsResult>;
@@ -463,7 +614,7 @@ export function get_pending_transactions(...args: any) {
                                         "tag" : "scalar",
                                         "name" : "u64"
                                     },
-                                    "data" : {
+                                    "mcdata" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
@@ -475,23 +626,19 @@ export function get_pending_transactions(...args: any) {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
-                                    "host_id" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
                                     "status" : {
                                         "tag" : "scalar",
                                         "name" : "i64"
                                     },
-                                    "error_text" : {
+                                    "chain_id" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
-                                    "nonce" : {
+                                    "token_address" : {
                                         "tag" : "scalar",
-                                        "name" : "i64"
+                                        "name" : "string"
                                     },
-                                    "from_peer_id" : {
+                                    "data" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
@@ -501,7 +648,7 @@ export function get_pending_transactions(...args: any) {
                                     },
                                     "version" : {
                                         "tag" : "scalar",
-                                        "name" : "i64"
+                                        "name" : "string"
                                     },
                                     "token_id" : {
                                         "tag" : "scalar",
@@ -541,16 +688,26 @@ export function get_pending_transactions(...args: any) {
     )
 }
 
-export type Send_cron_txArgArgs = { data: string; data_key: string; hash: string; token_id: string; tx_block_number: number; tx_hash: string; } 
+ 
 export type Send_cron_txResult = { cron_tx: { address: string; chain: string; data: string; data_key: string; error_text: string; hash: string; meta_contract_id: string; status: number; timestamp: number; token_id: string; token_key: string; token_type: string; topic: string; tx_block_number: number; tx_hash: string; }; err_msg: string; success: boolean; }
 export function send_cron_tx(
-    args: Send_cron_txArgArgs,
+    hash: string,
+    data_key: string,
+    data: string,
+    tx_block_number: number,
+    tx_hash: string,
+    token_id: string,
     config?: {ttl?: number}
 ): Promise<Send_cron_txResult>;
 
 export function send_cron_tx(
     peer: FluencePeer,
-    args: Send_cron_txArgArgs,
+    hash: string,
+    data_key: string,
+    data: string,
+    tx_block_number: number,
+    tx_hash: string,
+    token_id: string,
     config?: {ttl?: number}
 ): Promise<Send_cron_txResult>;
 
@@ -561,14 +718,26 @@ export function send_cron_tx(...args: any) {
                      (seq
                       (seq
                        (seq
-                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                        (call %init_peer_id% ("getDataSrv" "args") [] args)
+                        (seq
+                         (seq
+                          (seq
+                           (seq
+                            (seq
+                             (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                             (call %init_peer_id% ("getDataSrv" "hash") [] hash)
+                            )
+                            (call %init_peer_id% ("getDataSrv" "data_key") [] data_key)
+                           )
+                           (call %init_peer_id% ("getDataSrv" "data") [] data)
+                          )
+                          (call %init_peer_id% ("getDataSrv" "tx_block_number") [] tx_block_number)
+                         )
+                         (call %init_peer_id% ("getDataSrv" "tx_hash") [] tx_hash)
+                        )
+                        (call %init_peer_id% ("getDataSrv" "token_id") [] token_id)
                        )
                        (xor
-                        (seq
-                         (null)
-                         (call -relay- ("transaction" "send_cron_tx") [args.$.hash! args.$.data_key! args.$.data! args.$.tx_block_number! args.$.tx_hash! args.$.token_id!] results)
-                        )
+                        (call -relay- ("transaction" "send_cron_tx") [hash data_key data tx_block_number tx_hash token_id] results)
                         (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                        )
                       )
@@ -589,35 +758,29 @@ export function send_cron_tx(...args: any) {
         "domain" : {
             "tag" : "labeledProduct",
             "fields" : {
-                "args" : {
-                    "tag" : "struct",
-                    "name" : "SendCronTx",
-                    "fields" : {
-                        "data" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "tx_hash" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "hash" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "token_id" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "tx_block_number" : {
-                            "tag" : "scalar",
-                            "name" : "u64"
-                        },
-                        "data_key" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        }
-                    }
+                "hash" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "data_key" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "data" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "tx_block_number" : {
+                    "tag" : "scalar",
+                    "name" : "u64"
+                },
+                "tx_hash" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "token_id" : {
+                    "tag" : "scalar",
+                    "name" : "string"
                 }
             }
         },
@@ -721,94 +884,109 @@ export function send_cron_tx(...args: any) {
     )
 }
 
- 
+export type Set_metadata_cronArgMeta_contract = { cid: string; meta_contract_id: string; public_key: string; token_key: string; } 
 
-export function send_batch_transaction(
-    txs: { alias: string; data: string; data_key: string; method: string; nonce: number; public_key: string; signature: string; token_id: string; token_key: string; version: number; }[],
+export function set_metadata_cron(
+    meta_contract: Set_metadata_cronArgMeta_contract,
+    data_key: string,
+    on_metacontract_result: boolean,
+    metadatas: { alias: string; content: string; loose: number; public_key: string; }[],
     config?: {ttl?: number}
-): Promise<{ transaction_hash: string; }[]>;
+): Promise<void>;
 
-export function send_batch_transaction(
+export function set_metadata_cron(
     peer: FluencePeer,
-    txs: { alias: string; data: string; data_key: string; method: string; nonce: number; public_key: string; signature: string; token_id: string; token_key: string; version: number; }[],
+    meta_contract: Set_metadata_cronArgMeta_contract,
+    data_key: string,
+    on_metacontract_result: boolean,
+    metadatas: { alias: string; content: string; loose: number; public_key: string; }[],
     config?: {ttl?: number}
-): Promise<{ transaction_hash: string; }[]>;
+): Promise<void>;
 
-export function send_batch_transaction(...args: any) {
+export function set_metadata_cron(...args: any) {
 
     let script = `
                     (xor
                      (seq
                       (seq
                        (seq
-                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                        (call %init_peer_id% ("getDataSrv" "txs") [] txs)
+                        (seq
+                         (seq
+                          (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                          (call %init_peer_id% ("getDataSrv" "meta_contract") [] meta_contract)
+                         )
+                         (call %init_peer_id% ("getDataSrv" "data_key") [] data_key)
+                        )
+                        (call %init_peer_id% ("getDataSrv" "on_metacontract_result") [] on_metacontract_result)
                        )
-                       (xor
-                        (call -relay- ("transaction" "send_batch_transaction") [txs] results)
-                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
-                       )
+                       (call %init_peer_id% ("getDataSrv" "metadatas") [] metadatas)
                       )
                       (xor
-                       (call %init_peer_id% ("callbackSrv" "response") [results])
-                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                       (call -relay- ("transaction" "set_metadata_cron") [meta_contract data_key on_metacontract_result metadatas])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                       )
                      )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
                     )
     `
     return callFunction$$(
         args,
         {
-    "functionName" : "send_batch_transaction",
+    "functionName" : "set_metadata_cron",
     "arrow" : {
         "tag" : "arrow",
         "domain" : {
             "tag" : "labeledProduct",
             "fields" : {
-                "txs" : {
+                "meta_contract" : {
+                    "tag" : "struct",
+                    "name" : "MetaContract",
+                    "fields" : {
+                        "cid" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "meta_contract_id" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "public_key" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "token_key" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        }
+                    }
+                },
+                "data_key" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "on_metacontract_result" : {
+                    "tag" : "scalar",
+                    "name" : "bool"
+                },
+                "metadatas" : {
                     "tag" : "array",
                     "type" : {
                         "tag" : "struct",
-                        "name" : "TransactionRequest",
+                        "name" : "FinalMetadata",
                         "fields" : {
-                            "method" : {
-                                "tag" : "scalar",
-                                "name" : "string"
-                            },
-                            "nonce" : {
-                                "tag" : "scalar",
-                                "name" : "i64"
-                            },
-                            "data" : {
-                                "tag" : "scalar",
-                                "name" : "string"
-                            },
-                            "signature" : {
-                                "tag" : "scalar",
-                                "name" : "string"
-                            },
-                            "public_key" : {
-                                "tag" : "scalar",
-                                "name" : "string"
-                            },
-                            "data_key" : {
-                                "tag" : "scalar",
-                                "name" : "string"
-                            },
                             "alias" : {
                                 "tag" : "scalar",
                                 "name" : "string"
                             },
-                            "version" : {
-                                "tag" : "scalar",
-                                "name" : "i64"
-                            },
-                            "token_id" : {
+                            "content" : {
                                 "tag" : "scalar",
                                 "name" : "string"
                             },
-                            "token_key" : {
+                            "loose" : {
+                                "tag" : "scalar",
+                                "name" : "i64"
+                            },
+                            "public_key" : {
                                 "tag" : "scalar",
                                 "name" : "string"
                             }
@@ -818,22 +996,7 @@ export function send_batch_transaction(...args: any) {
             }
         },
         "codomain" : {
-            "tag" : "unlabeledProduct",
-            "items" : [
-                {
-                    "tag" : "array",
-                    "type" : {
-                        "tag" : "struct",
-                        "name" : "FdbResult",
-                        "fields" : {
-                            "transaction_hash" : {
-                                "tag" : "scalar",
-                                "name" : "string"
-                            }
-                        }
-                    }
-                }
-            ]
+            "tag" : "nil"
         }
     },
     "names" : {
@@ -904,7 +1067,7 @@ export function get_all_crons(...args: any) {
                             "tag" : "array",
                             "type" : {
                                 "tag" : "struct",
-                                "name" : "CronResult",
+                                "name" : "Cron",
                                 "fields" : {
                                     "node_url" : {
                                         "tag" : "scalar",
@@ -1122,16 +1285,145 @@ export function get_all_cron_txs(...args: any) {
     )
 }
 
+export type PublishArgTx_request = { alias: string; chain_id: string; data: string; mcdata: string; meta_contract_id: string; method: string; public_key: string; signature: string; token_address: string; token_id: string; version: string; } 
+export type PublishResult = { transaction_hash: string; }
+export function publish(
+    tx_request: PublishArgTx_request,
+    config?: {ttl?: number}
+): Promise<PublishResult>;
+
+export function publish(
+    peer: FluencePeer,
+    tx_request: PublishArgTx_request,
+    config?: {ttl?: number}
+): Promise<PublishResult>;
+
+export function publish(...args: any) {
+
+    let script = `
+                    (xor
+                     (seq
+                      (seq
+                       (seq
+                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                        (call %init_peer_id% ("getDataSrv" "tx_request") [] tx_request)
+                       )
+                       (xor
+                        (call -relay- ("transaction" "publish") [tx_request] results)
+                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       )
+                      )
+                      (xor
+                       (call %init_peer_id% ("callbackSrv" "response") [results])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                      )
+                     )
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
+                    )
+    `
+    return callFunction$$(
+        args,
+        {
+    "functionName" : "publish",
+    "arrow" : {
+        "tag" : "arrow",
+        "domain" : {
+            "tag" : "labeledProduct",
+            "fields" : {
+                "tx_request" : {
+                    "tag" : "struct",
+                    "name" : "TransactionRequest",
+                    "fields" : {
+                        "method" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "signature" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "mcdata" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "public_key" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "token_id" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "meta_contract_id" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "chain_id" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "token_address" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "data" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "alias" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "version" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        }
+                    }
+                }
+            }
+        },
+        "codomain" : {
+            "tag" : "unlabeledProduct",
+            "items" : [
+                {
+                    "tag" : "struct",
+                    "name" : "FdbResult",
+                    "fields" : {
+                        "transaction_hash" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "names" : {
+        "relay" : "-relay-",
+        "getDataSrv" : "getDataSrv",
+        "callbackSrv" : "callbackSrv",
+        "responseSrv" : "callbackSrv",
+        "responseFnName" : "response",
+        "errorHandlingSrv" : "errorHandlingSrv",
+        "errorFnName" : "error"
+    }
+},
+        script
+    )
+}
+
  
-export type Get_metadatasResult = { err_msg: string; metadatas: { alias: string; cid: string; data_key: string; hash: string; public_key: string; }[]; success: boolean; }
+export type Get_metadatasResult = { err_msg: string; metadatas: { alias: string; cid: string; data_key: string; hash: string; loose: number; meta_contract_id: string; public_key: string; token_key: string; version: string; }[]; success: boolean; }
 export function get_metadatas(
     data_key: string,
+    version: string,
     config?: {ttl?: number}
 ): Promise<Get_metadatasResult>;
 
 export function get_metadatas(
     peer: FluencePeer,
     data_key: string,
+    version: string,
     config?: {ttl?: number}
 ): Promise<Get_metadatasResult>;
 
@@ -1142,11 +1434,14 @@ export function get_metadatas(...args: any) {
                      (seq
                       (seq
                        (seq
-                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                        (call %init_peer_id% ("getDataSrv" "data_key") [] data_key)
+                        (seq
+                         (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                         (call %init_peer_id% ("getDataSrv" "data_key") [] data_key)
+                        )
+                        (call %init_peer_id% ("getDataSrv" "version") [] version)
                        )
                        (xor
-                        (call -relay- ("transaction" "get_metadatas") [data_key] results)
+                        (call -relay- ("transaction" "get_metadatas") [data_key version] results)
                         (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                        )
                       )
@@ -1170,6 +1465,10 @@ export function get_metadatas(...args: any) {
                 "data_key" : {
                     "tag" : "scalar",
                     "name" : "string"
+                },
+                "version" : {
+                    "tag" : "scalar",
+                    "name" : "string"
                 }
             }
         },
@@ -1190,11 +1489,11 @@ export function get_metadatas(...args: any) {
                                 "tag" : "struct",
                                 "name" : "Metadata",
                                 "fields" : {
-                                    "public_key" : {
+                                    "loose" : {
                                         "tag" : "scalar",
-                                        "name" : "string"
+                                        "name" : "i64"
                                     },
-                                    "alias" : {
+                                    "public_key" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
@@ -1203,6 +1502,22 @@ export function get_metadatas(...args: any) {
                                         "name" : "string"
                                     },
                                     "cid" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "token_key" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "alias" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "version" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "meta_contract_id" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
@@ -1237,7 +1552,70 @@ export function get_metadatas(...args: any) {
 }
 
  
-export type Get_meta_contractResult = { err_msg: string; meta: { meta_contract_id: string; public_key: string; token_key: string; }; success: boolean; }
+
+export function set_cron(
+    transaction_hash: string,
+    config?: {ttl?: number}
+): Promise<void>;
+
+export function set_cron(
+    peer: FluencePeer,
+    transaction_hash: string,
+    config?: {ttl?: number}
+): Promise<void>;
+
+export function set_cron(...args: any) {
+
+    let script = `
+                    (xor
+                     (seq
+                      (seq
+                       (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                       (call %init_peer_id% ("getDataSrv" "transaction_hash") [] transaction_hash)
+                      )
+                      (xor
+                       (call -relay- ("transaction" "set_cron") [transaction_hash])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                      )
+                     )
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                    )
+    `
+    return callFunction$$(
+        args,
+        {
+    "functionName" : "set_cron",
+    "arrow" : {
+        "tag" : "arrow",
+        "domain" : {
+            "tag" : "labeledProduct",
+            "fields" : {
+                "transaction_hash" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                }
+            }
+        },
+        "codomain" : {
+            "tag" : "nil"
+        }
+    },
+    "names" : {
+        "relay" : "-relay-",
+        "getDataSrv" : "getDataSrv",
+        "callbackSrv" : "callbackSrv",
+        "responseSrv" : "callbackSrv",
+        "responseFnName" : "response",
+        "errorHandlingSrv" : "errorHandlingSrv",
+        "errorFnName" : "error"
+    }
+},
+        script
+    )
+}
+
+ 
+export type Get_meta_contractResult = { err_msg: string; meta: { cid: string; meta_contract_id: string; public_key: string; token_key: string; }; success: boolean; }
 export function get_meta_contract(
     token_key: string,
     config?: {ttl?: number}
@@ -1302,6 +1680,10 @@ export function get_meta_contract(...args: any) {
                             "tag" : "struct",
                             "name" : "MetaContract",
                             "fields" : {
+                                "cid" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
                                 "meta_contract_id" : {
                                     "tag" : "scalar",
                                     "name" : "string"
@@ -1393,7 +1775,7 @@ export function get_active_crons(...args: any) {
                             "tag" : "array",
                             "type" : {
                                 "tag" : "struct",
-                                "name" : "CronResult",
+                                "name" : "Cron",
                                 "fields" : {
                                     "node_url" : {
                                         "tag" : "scalar",
@@ -1466,19 +1848,23 @@ export function get_active_crons(...args: any) {
 }
 
  
-export type Get_metadataResult = { err_msg: string; metadata: { alias: string; cid: string; data_key: string; hash: string; public_key: string; }; success: boolean; }
+export type Get_metadataResult = { err_msg: string; metadata: { alias: string; cid: string; data_key: string; hash: string; loose: number; meta_contract_id: string; public_key: string; token_key: string; version: string; }; success: boolean; }
 export function get_metadata(
     data_key: string,
+    meta_contract_id: string,
     public_key: string,
     alias: string,
+    version: string,
     config?: {ttl?: number}
 ): Promise<Get_metadataResult>;
 
 export function get_metadata(
     peer: FluencePeer,
     data_key: string,
+    meta_contract_id: string,
     public_key: string,
     alias: string,
+    version: string,
     config?: {ttl?: number}
 ): Promise<Get_metadataResult>;
 
@@ -1491,15 +1877,21 @@ export function get_metadata(...args: any) {
                        (seq
                         (seq
                          (seq
-                          (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                          (call %init_peer_id% ("getDataSrv" "data_key") [] data_key)
+                          (seq
+                           (seq
+                            (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                            (call %init_peer_id% ("getDataSrv" "data_key") [] data_key)
+                           )
+                           (call %init_peer_id% ("getDataSrv" "meta_contract_id") [] meta_contract_id)
+                          )
+                          (call %init_peer_id% ("getDataSrv" "public_key") [] public_key)
                          )
-                         (call %init_peer_id% ("getDataSrv" "public_key") [] public_key)
+                         (call %init_peer_id% ("getDataSrv" "alias") [] alias)
                         )
-                        (call %init_peer_id% ("getDataSrv" "alias") [] alias)
+                        (call %init_peer_id% ("getDataSrv" "version") [] version)
                        )
                        (xor
-                        (call -relay- ("transaction" "get_metadata") [data_key public_key alias] results)
+                        (call -relay- ("transaction" "get_metadata") [data_key meta_contract_id public_key alias version] results)
                         (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                        )
                       )
@@ -1524,11 +1916,19 @@ export function get_metadata(...args: any) {
                     "tag" : "scalar",
                     "name" : "string"
                 },
+                "meta_contract_id" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
                 "public_key" : {
                     "tag" : "scalar",
                     "name" : "string"
                 },
                 "alias" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "version" : {
                     "tag" : "scalar",
                     "name" : "string"
                 }
@@ -1549,11 +1949,11 @@ export function get_metadata(...args: any) {
                             "tag" : "struct",
                             "name" : "Metadata",
                             "fields" : {
-                                "public_key" : {
+                                "loose" : {
                                     "tag" : "scalar",
-                                    "name" : "string"
+                                    "name" : "i64"
                                 },
-                                "alias" : {
+                                "public_key" : {
                                     "tag" : "scalar",
                                     "name" : "string"
                                 },
@@ -1562,6 +1962,22 @@ export function get_metadata(...args: any) {
                                     "name" : "string"
                                 },
                                 "cid" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "token_key" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "alias" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "version" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "meta_contract_id" : {
                                     "tag" : "scalar",
                                     "name" : "string"
                                 },
@@ -1594,161 +2010,45 @@ export function get_metadata(...args: any) {
     )
 }
 
-export type Get_success_transactionsArgArgs = { from: number; to: number; } 
-export type Get_success_transactionsResult = { err_msg: string; success: boolean; transactions: { alias: string; data: string; data_key: string; error_text: string; from_peer_id: string; hash: string; host_id: string; meta_contract_id: string; method: string; nonce: number; public_key: string; status: number; timestamp: number; token_id: string; token_key: string; version: number; }[]; }
-export function get_success_transactions(
-    args: Get_success_transactionsArgArgs,
-    config?: {ttl?: number}
-): Promise<Get_success_transactionsResult>;
+ 
 
-export function get_success_transactions(
+export function init(
+    config?: {ttl?: number}
+): Promise<void>;
+
+export function init(
     peer: FluencePeer,
-    args: Get_success_transactionsArgArgs,
     config?: {ttl?: number}
-): Promise<Get_success_transactionsResult>;
+): Promise<void>;
 
-export function get_success_transactions(...args: any) {
+export function init(...args: any) {
 
     let script = `
                     (xor
                      (seq
-                      (seq
-                       (seq
-                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                        (call %init_peer_id% ("getDataSrv" "args") [] args)
-                       )
-                       (xor
-                        (seq
-                         (null)
-                         (call -relay- ("transaction" "get_success_transactions") [args.$.from! args.$.to!] results)
-                        )
-                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
-                       )
-                      )
+                      (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
                       (xor
-                       (call %init_peer_id% ("callbackSrv" "response") [results])
-                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                       (call -relay- ("transaction" "init") [])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                       )
                      )
-                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
                     )
     `
     return callFunction$$(
         args,
         {
-    "functionName" : "get_success_transactions",
+    "functionName" : "init",
     "arrow" : {
         "tag" : "arrow",
         "domain" : {
             "tag" : "labeledProduct",
             "fields" : {
-                "args" : {
-                    "tag" : "struct",
-                    "name" : "GetSuccessTransactions",
-                    "fields" : {
-                        "from" : {
-                            "tag" : "scalar",
-                            "name" : "i64"
-                        },
-                        "to" : {
-                            "tag" : "scalar",
-                            "name" : "i64"
-                        }
-                    }
-                }
+                
             }
         },
         "codomain" : {
-            "tag" : "unlabeledProduct",
-            "items" : [
-                {
-                    "tag" : "struct",
-                    "name" : "FdbTransactionsResult",
-                    "fields" : {
-                        "err_msg" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "success" : {
-                            "tag" : "scalar",
-                            "name" : "bool"
-                        },
-                        "transactions" : {
-                            "tag" : "array",
-                            "type" : {
-                                "tag" : "struct",
-                                "name" : "Transaction",
-                                "fields" : {
-                                    "method" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "timestamp" : {
-                                        "tag" : "scalar",
-                                        "name" : "u64"
-                                    },
-                                    "data" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "public_key" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "hash" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "host_id" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "status" : {
-                                        "tag" : "scalar",
-                                        "name" : "i64"
-                                    },
-                                    "error_text" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "nonce" : {
-                                        "tag" : "scalar",
-                                        "name" : "i64"
-                                    },
-                                    "from_peer_id" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "alias" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "version" : {
-                                        "tag" : "scalar",
-                                        "name" : "i64"
-                                    },
-                                    "token_id" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "token_key" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "meta_contract_id" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
-                                    "data_key" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            ]
+            "tag" : "nil"
         }
     },
     "names" : {
@@ -1854,20 +2154,20 @@ export function deserialize_fork(...args: any) {
     )
 }
 
-export type Send_transactionArgArgs = { alias: string; data: string; data_key: string; method: string; nonce: number; public_key: string; signature: string; token_id: string; token_key: string; version: number; } 
-export type Send_transactionResult = { transaction_hash: string; }
-export function send_transaction(
-    args: Send_transactionArgArgs,
-    config?: {ttl?: number}
-): Promise<Send_transactionResult>;
+ 
 
-export function send_transaction(
+export function publish_batch(
+    txs: { alias: string; chain_id: string; data: string; mcdata: string; meta_contract_id: string; method: string; public_key: string; signature: string; token_address: string; token_id: string; version: string; }[],
+    config?: {ttl?: number}
+): Promise<{ transaction_hash: string; }[]>;
+
+export function publish_batch(
     peer: FluencePeer,
-    args: Send_transactionArgArgs,
+    txs: { alias: string; chain_id: string; data: string; mcdata: string; meta_contract_id: string; method: string; public_key: string; signature: string; token_address: string; token_id: string; version: string; }[],
     config?: {ttl?: number}
-): Promise<Send_transactionResult>;
+): Promise<{ transaction_hash: string; }[]>;
 
-export function send_transaction(...args: any) {
+export function publish_batch(...args: any) {
 
     let script = `
                     (xor
@@ -1875,13 +2175,10 @@ export function send_transaction(...args: any) {
                       (seq
                        (seq
                         (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                        (call %init_peer_id% ("getDataSrv" "args") [] args)
+                        (call %init_peer_id% ("getDataSrv" "txs") [] txs)
                        )
                        (xor
-                        (seq
-                         (null)
-                         (call -relay- ("transaction" "send_transaction") [args.$.data_key! args.$.token_key! args.$.token_id! args.$.alias! args.$.public_key! args.$.signature! args.$.data! args.$.method! args.$.nonce! args.$.version!] results)
-                        )
+                        (call -relay- ("transaction" "publish_batch") [txs] results)
                         (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                        )
                       )
@@ -1896,55 +2193,62 @@ export function send_transaction(...args: any) {
     return callFunction$$(
         args,
         {
-    "functionName" : "send_transaction",
+    "functionName" : "publish_batch",
     "arrow" : {
         "tag" : "arrow",
         "domain" : {
             "tag" : "labeledProduct",
             "fields" : {
-                "args" : {
-                    "tag" : "struct",
-                    "name" : "TransactionRequest",
-                    "fields" : {
-                        "method" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "nonce" : {
-                            "tag" : "scalar",
-                            "name" : "i64"
-                        },
-                        "data" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "signature" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "public_key" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "data_key" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "alias" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "version" : {
-                            "tag" : "scalar",
-                            "name" : "i64"
-                        },
-                        "token_id" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "token_key" : {
-                            "tag" : "scalar",
-                            "name" : "string"
+                "txs" : {
+                    "tag" : "array",
+                    "type" : {
+                        "tag" : "struct",
+                        "name" : "TransactionRequest",
+                        "fields" : {
+                            "method" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "signature" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "mcdata" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "public_key" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "token_id" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "meta_contract_id" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "chain_id" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "token_address" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "data" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "alias" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "version" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            }
                         }
                     }
                 }
@@ -1954,12 +2258,15 @@ export function send_transaction(...args: any) {
             "tag" : "unlabeledProduct",
             "items" : [
                 {
-                    "tag" : "struct",
-                    "name" : "FdbResult",
-                    "fields" : {
-                        "transaction_hash" : {
-                            "tag" : "scalar",
-                            "name" : "string"
+                    "tag" : "array",
+                    "type" : {
+                        "tag" : "struct",
+                        "name" : "FdbResult",
+                        "fields" : {
+                            "transaction_hash" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            }
                         }
                     }
                 }
@@ -1981,30 +2288,45 @@ export function send_transaction(...args: any) {
 }
 
  
-export type Get_transactionResult = { err_msg: string; success: boolean; transaction: { alias: string; data: string; data_key: string; error_text: string; from_peer_id: string; hash: string; host_id: string; meta_contract_id: string; method: string; nonce: number; public_key: string; status: number; timestamp: number; token_id: string; token_key: string; version: number; }; }
-export function get_transaction(
-    hash: string,
+export type Search_metadatasResult = { err_msg: string; metadatas: { alias: string; cid: string; data_key: string; hash: string; loose: number; meta_contract_id: string; public_key: string; token_key: string; version: string; }[]; success: boolean; }
+export function search_metadatas(
+    query: { column: string; op: string; query: string; }[],
+    ordering: { column: string; sort: string; }[],
+    from: number,
+    to: number,
     config?: {ttl?: number}
-): Promise<Get_transactionResult>;
+): Promise<Search_metadatasResult>;
 
-export function get_transaction(
+export function search_metadatas(
     peer: FluencePeer,
-    hash: string,
+    query: { column: string; op: string; query: string; }[],
+    ordering: { column: string; sort: string; }[],
+    from: number,
+    to: number,
     config?: {ttl?: number}
-): Promise<Get_transactionResult>;
+): Promise<Search_metadatasResult>;
 
-export function get_transaction(...args: any) {
+export function search_metadatas(...args: any) {
 
     let script = `
                     (xor
                      (seq
                       (seq
                        (seq
-                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                        (call %init_peer_id% ("getDataSrv" "hash") [] hash)
+                        (seq
+                         (seq
+                          (seq
+                           (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                           (call %init_peer_id% ("getDataSrv" "query") [] query)
+                          )
+                          (call %init_peer_id% ("getDataSrv" "ordering") [] ordering)
+                         )
+                         (call %init_peer_id% ("getDataSrv" "from") [] from)
+                        )
+                        (call %init_peer_id% ("getDataSrv" "to") [] to)
                        )
                        (xor
-                        (call -relay- ("transaction" "get_transaction") [hash] results)
+                        (call -relay- ("transaction" "search_metadatas") [query ordering from to] results)
                         (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                        )
                       )
@@ -2019,15 +2341,57 @@ export function get_transaction(...args: any) {
     return callFunction$$(
         args,
         {
-    "functionName" : "get_transaction",
+    "functionName" : "search_metadatas",
     "arrow" : {
         "tag" : "arrow",
         "domain" : {
             "tag" : "labeledProduct",
             "fields" : {
-                "hash" : {
+                "query" : {
+                    "tag" : "array",
+                    "type" : {
+                        "tag" : "struct",
+                        "name" : "MetadataQuery",
+                        "fields" : {
+                            "column" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "op" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "query" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            }
+                        }
+                    }
+                },
+                "ordering" : {
+                    "tag" : "array",
+                    "type" : {
+                        "tag" : "struct",
+                        "name" : "MetadataOrdering",
+                        "fields" : {
+                            "column" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "sort" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            }
+                        }
+                    }
+                },
+                "from" : {
                     "tag" : "scalar",
-                    "name" : "string"
+                    "name" : "u32"
+                },
+                "to" : {
+                    "tag" : "scalar",
+                    "name" : "u32"
                 }
             }
         },
@@ -2036,85 +2400,60 @@ export function get_transaction(...args: any) {
             "items" : [
                 {
                     "tag" : "struct",
-                    "name" : "FdbTransactionResult",
+                    "name" : "FdbMetadatasResult",
                     "fields" : {
                         "err_msg" : {
                             "tag" : "scalar",
                             "name" : "string"
                         },
+                        "metadatas" : {
+                            "tag" : "array",
+                            "type" : {
+                                "tag" : "struct",
+                                "name" : "Metadata",
+                                "fields" : {
+                                    "loose" : {
+                                        "tag" : "scalar",
+                                        "name" : "i64"
+                                    },
+                                    "public_key" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "hash" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "cid" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "token_key" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "alias" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "version" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "meta_contract_id" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "data_key" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    }
+                                }
+                            }
+                        },
                         "success" : {
                             "tag" : "scalar",
                             "name" : "bool"
-                        },
-                        "transaction" : {
-                            "tag" : "struct",
-                            "name" : "Transaction",
-                            "fields" : {
-                                "method" : {
-                                    "tag" : "scalar",
-                                    "name" : "string"
-                                },
-                                "timestamp" : {
-                                    "tag" : "scalar",
-                                    "name" : "u64"
-                                },
-                                "data" : {
-                                    "tag" : "scalar",
-                                    "name" : "string"
-                                },
-                                "public_key" : {
-                                    "tag" : "scalar",
-                                    "name" : "string"
-                                },
-                                "hash" : {
-                                    "tag" : "scalar",
-                                    "name" : "string"
-                                },
-                                "host_id" : {
-                                    "tag" : "scalar",
-                                    "name" : "string"
-                                },
-                                "status" : {
-                                    "tag" : "scalar",
-                                    "name" : "i64"
-                                },
-                                "error_text" : {
-                                    "tag" : "scalar",
-                                    "name" : "string"
-                                },
-                                "nonce" : {
-                                    "tag" : "scalar",
-                                    "name" : "i64"
-                                },
-                                "from_peer_id" : {
-                                    "tag" : "scalar",
-                                    "name" : "string"
-                                },
-                                "alias" : {
-                                    "tag" : "scalar",
-                                    "name" : "string"
-                                },
-                                "version" : {
-                                    "tag" : "scalar",
-                                    "name" : "i64"
-                                },
-                                "token_id" : {
-                                    "tag" : "scalar",
-                                    "name" : "string"
-                                },
-                                "token_key" : {
-                                    "tag" : "scalar",
-                                    "name" : "string"
-                                },
-                                "meta_contract_id" : {
-                                    "tag" : "scalar",
-                                    "name" : "string"
-                                },
-                                "data_key" : {
-                                    "tag" : "scalar",
-                                    "name" : "string"
-                                }
-                            }
                         }
                     }
                 }
@@ -2212,16 +2551,20 @@ export function get_node_clock(...args: any) {
 export type Get_metadata_with_historyResult = { err_msg: string; history: string[]; metadata: string; success: boolean; }
 export function get_metadata_with_history(
     data_key: string,
+    meta_contract_id: string,
     public_key: string,
     alias: string,
+    version: string,
     config?: {ttl?: number}
 ): Promise<Get_metadata_with_historyResult>;
 
 export function get_metadata_with_history(
     peer: FluencePeer,
     data_key: string,
+    meta_contract_id: string,
     public_key: string,
     alias: string,
+    version: string,
     config?: {ttl?: number}
 ): Promise<Get_metadata_with_historyResult>;
 
@@ -2234,15 +2577,21 @@ export function get_metadata_with_history(...args: any) {
                        (seq
                         (seq
                          (seq
-                          (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                          (call %init_peer_id% ("getDataSrv" "data_key") [] data_key)
+                          (seq
+                           (seq
+                            (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                            (call %init_peer_id% ("getDataSrv" "data_key") [] data_key)
+                           )
+                           (call %init_peer_id% ("getDataSrv" "meta_contract_id") [] meta_contract_id)
+                          )
+                          (call %init_peer_id% ("getDataSrv" "public_key") [] public_key)
                          )
-                         (call %init_peer_id% ("getDataSrv" "public_key") [] public_key)
+                         (call %init_peer_id% ("getDataSrv" "alias") [] alias)
                         )
-                        (call %init_peer_id% ("getDataSrv" "alias") [] alias)
+                        (call %init_peer_id% ("getDataSrv" "version") [] version)
                        )
                        (xor
-                        (call -relay- ("transaction" "get_metadata_with_history") [data_key public_key alias] results)
+                        (call -relay- ("transaction" "get_metadata_with_history") [data_key meta_contract_id public_key alias version] results)
                         (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                        )
                       )
@@ -2267,11 +2616,19 @@ export function get_metadata_with_history(...args: any) {
                     "tag" : "scalar",
                     "name" : "string"
                 },
+                "meta_contract_id" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
                 "public_key" : {
                     "tag" : "scalar",
                     "name" : "string"
                 },
                 "alias" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "version" : {
                     "tag" : "scalar",
                     "name" : "string"
                 }
@@ -2322,16 +2679,22 @@ export function get_metadata_with_history(...args: any) {
     )
 }
 
-export type Get_cron_tx_by_tx_hashArgArgs = { address: string; chain: string; topic: string; tx_hash: string; } 
+ 
 export type Get_cron_tx_by_tx_hashResult = { cron_tx: { address: string; chain: string; data: string; data_key: string; error_text: string; hash: string; meta_contract_id: string; status: number; timestamp: number; token_id: string; token_key: string; token_type: string; topic: string; tx_block_number: number; tx_hash: string; }; err_msg: string; success: boolean; }
 export function get_cron_tx_by_tx_hash(
-    args: Get_cron_tx_by_tx_hashArgArgs,
+    tx_hash: string,
+    address: string,
+    chain: string,
+    topic: string,
     config?: {ttl?: number}
 ): Promise<Get_cron_tx_by_tx_hashResult>;
 
 export function get_cron_tx_by_tx_hash(
     peer: FluencePeer,
-    args: Get_cron_tx_by_tx_hashArgArgs,
+    tx_hash: string,
+    address: string,
+    chain: string,
+    topic: string,
     config?: {ttl?: number}
 ): Promise<Get_cron_tx_by_tx_hashResult>;
 
@@ -2342,14 +2705,20 @@ export function get_cron_tx_by_tx_hash(...args: any) {
                      (seq
                       (seq
                        (seq
-                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                        (call %init_peer_id% ("getDataSrv" "args") [] args)
+                        (seq
+                         (seq
+                          (seq
+                           (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                           (call %init_peer_id% ("getDataSrv" "tx_hash") [] tx_hash)
+                          )
+                          (call %init_peer_id% ("getDataSrv" "address") [] address)
+                         )
+                         (call %init_peer_id% ("getDataSrv" "chain") [] chain)
+                        )
+                        (call %init_peer_id% ("getDataSrv" "topic") [] topic)
                        )
                        (xor
-                        (seq
-                         (null)
-                         (call -relay- ("transaction" "get_cron_tx_by_tx_hash") [args.$.tx_hash! args.$.address! args.$.chain! args.$.topic!] results)
-                        )
+                        (call -relay- ("transaction" "get_cron_tx_by_tx_hash") [tx_hash address chain topic] results)
                         (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                        )
                       )
@@ -2370,27 +2739,21 @@ export function get_cron_tx_by_tx_hash(...args: any) {
         "domain" : {
             "tag" : "labeledProduct",
             "fields" : {
-                "args" : {
-                    "tag" : "struct",
-                    "name" : "GetCronTxByTxHash",
-                    "fields" : {
-                        "address" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "chain" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "topic" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "tx_hash" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        }
-                    }
+                "tx_hash" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "address" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "chain" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "topic" : {
+                    "tag" : "scalar",
+                    "name" : "string"
                 }
             }
         },
@@ -2494,16 +2857,20 @@ export function get_cron_tx_by_tx_hash(...args: any) {
     )
 }
 
-export type Get_cron_tx_latest_blockArgArgs = { address: string; chain: string; topic: string; } 
+ 
 
 export function get_cron_tx_latest_block(
-    args: Get_cron_tx_latest_blockArgArgs,
+    address: string,
+    chain: string,
+    topic: string,
     config?: {ttl?: number}
 ): Promise<number>;
 
 export function get_cron_tx_latest_block(
     peer: FluencePeer,
-    args: Get_cron_tx_latest_blockArgArgs,
+    address: string,
+    chain: string,
+    topic: string,
     config?: {ttl?: number}
 ): Promise<number>;
 
@@ -2514,14 +2881,17 @@ export function get_cron_tx_latest_block(...args: any) {
                      (seq
                       (seq
                        (seq
-                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                        (call %init_peer_id% ("getDataSrv" "args") [] args)
+                        (seq
+                         (seq
+                          (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                          (call %init_peer_id% ("getDataSrv" "address") [] address)
+                         )
+                         (call %init_peer_id% ("getDataSrv" "chain") [] chain)
+                        )
+                        (call %init_peer_id% ("getDataSrv" "topic") [] topic)
                        )
                        (xor
-                        (seq
-                         (null)
-                         (call -relay- ("transaction" "get_cron_tx_latest_block") [args.$.address! args.$.chain! args.$.topic!] results)
-                        )
+                        (call -relay- ("transaction" "get_cron_tx_latest_block") [address chain topic] results)
                         (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                        )
                       )
@@ -2542,23 +2912,17 @@ export function get_cron_tx_latest_block(...args: any) {
         "domain" : {
             "tag" : "labeledProduct",
             "fields" : {
-                "args" : {
-                    "tag" : "struct",
-                    "name" : "GetCronTxByLatestBlock",
-                    "fields" : {
-                        "address" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "chain" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "topic" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        }
-                    }
+                "address" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "chain" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "topic" : {
+                    "tag" : "scalar",
+                    "name" : "string"
                 }
             }
         },
@@ -2586,16 +2950,20 @@ export function get_cron_tx_latest_block(...args: any) {
     )
 }
 
-export type Search_cron_txArgArgs = { address: string; chain: string; topic: string; } 
+ 
 export type Search_cron_txResult = { cron_txs: { address: string; chain: string; data: string; data_key: string; error_text: string; hash: string; meta_contract_id: string; status: number; timestamp: number; token_id: string; token_key: string; token_type: string; topic: string; tx_block_number: number; tx_hash: string; }[]; err_msg: string; success: boolean; }
 export function search_cron_tx(
-    args: Search_cron_txArgArgs,
+    address: string,
+    chain: string,
+    topic: string,
     config?: {ttl?: number}
 ): Promise<Search_cron_txResult>;
 
 export function search_cron_tx(
     peer: FluencePeer,
-    args: Search_cron_txArgArgs,
+    address: string,
+    chain: string,
+    topic: string,
     config?: {ttl?: number}
 ): Promise<Search_cron_txResult>;
 
@@ -2606,14 +2974,17 @@ export function search_cron_tx(...args: any) {
                      (seq
                       (seq
                        (seq
-                        (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                        (call %init_peer_id% ("getDataSrv" "args") [] args)
+                        (seq
+                         (seq
+                          (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                          (call %init_peer_id% ("getDataSrv" "address") [] address)
+                         )
+                         (call %init_peer_id% ("getDataSrv" "chain") [] chain)
+                        )
+                        (call %init_peer_id% ("getDataSrv" "topic") [] topic)
                        )
                        (xor
-                        (seq
-                         (null)
-                         (call -relay- ("transaction" "search_cron_tx") [args.$.address! args.$.chain! args.$.topic!] results)
-                        )
+                        (call -relay- ("transaction" "search_cron_tx") [address chain topic] results)
                         (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                        )
                       )
@@ -2634,23 +3005,17 @@ export function search_cron_tx(...args: any) {
         "domain" : {
             "tag" : "labeledProduct",
             "fields" : {
-                "args" : {
-                    "tag" : "struct",
-                    "name" : "SearchCronTx",
-                    "fields" : {
-                        "address" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "chain" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        },
-                        "topic" : {
-                            "tag" : "scalar",
-                            "name" : "string"
-                        }
-                    }
+                "address" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "chain" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "topic" : {
+                    "tag" : "scalar",
+                    "name" : "string"
                 }
             }
         },

@@ -1,51 +1,5 @@
 import "./node.aqua"
 
-data Metadata:
-  data_key: string
-  public_key: string
-  alias: string
-
-data SearchMetadatas:
-  query: []MetadataQuery
-  ordering: []MetadataOrdering
-  from: u32
-  to: u32
-
-data GetCronTxByTxHash:
-  tx_hash: string
-  address: string
-  chain: string
-  topic: string
-
-data GetCronTxByLatestBlock:
-  address: string
-  chain: string
-  topic: string
-
-data GetSuccessTransactions:
-  from: i64
-  to: i64
-
-data SearchCronTx:
-  address: string
-  chain: string
-  topic: string
-
-data SendCronTx:
-  hash: string
-  data_key: string
-  data: string 
-  tx_block_number: u64 
-  tx_hash: string 
-  token_id: string
- 
-
-data GetTransactions:
-  query: []TransactionQuery
-  ordering: []TransactionOrdering
-  from: u32
-  to: u32
-
 func deserialize_fork(data: string) -> DataTypeFork:
     on HOST_PEER_ID:
         results <- Node.deserialize_fork(data)
@@ -66,14 +20,19 @@ func get_all_crons() -> FdbCronsResult:
         results <- Node.get_all_crons()
     <- results
 
-func get_cron_tx_by_tx_hash(args: GetCronTxByTxHash) -> FdbCronTxResult:
+func get_complete_transactions(from: i64, to: i64) -> FdbTransactionsResult:
     on HOST_PEER_ID:
-        results <- Node.get_cron_tx_by_tx_hash(args.tx_hash, args.address, args.chain, args.topic)
+        results <- Node.get_complete_transactions(from, to)
     <- results
 
-func get_cron_tx_latest_block(args: GetCronTxByLatestBlock) -> u64:
+func get_cron_tx_by_tx_hash(tx_hash: string, address: string, chain: string, topic: string) -> FdbCronTxResult:
     on HOST_PEER_ID:
-        results <- Node.get_cron_tx_latest_block(args.address, args.chain, args.topic)
+        results <- Node.get_cron_tx_by_tx_hash(tx_hash, address, chain, topic)
+    <- results
+
+func get_cron_tx_latest_block(address: string, chain: string, topic: string) -> u64:
+    on HOST_PEER_ID:
+        results <- Node.get_cron_tx_latest_block(address, chain, topic)
     <- results
 
 func get_meta_contract(token_key: string) -> FdbMetaContractResult:
@@ -81,19 +40,19 @@ func get_meta_contract(token_key: string) -> FdbMetaContractResult:
         results <- Node.get_meta_contract(token_key)
     <- results
 
-func get_metadata(data_key: string, public_key: string, alias: string) -> FdbMetadataResult:
+func get_metadata(data_key: string, meta_contract_id: string, public_key: string, alias: string, version: string) -> FdbMetadataResult:
     on HOST_PEER_ID:
-        results <- Node.get_metadata(data_key, public_key, alias) 
+        results <- Node.get_metadata(data_key, meta_contract_id, public_key, alias, version) 
     <- results
 
-func get_metadata_with_history(data_key: string, public_key: string, alias: string) -> FdbMetadataHistoryResult:
+func get_metadata_with_history(data_key: string, meta_contract_id: string, public_key: string, alias: string, version: string) -> FdbMetadataHistoryResult:
     on HOST_PEER_ID:
-        results <- Node.get_metadata_with_history(data_key, public_key, alias)
+        results <- Node.get_metadata_with_history(data_key, meta_contract_id, public_key, alias, version)
     <- results
 
-func get_metadatas(data_key: string) -> FdbMetadatasResult:
+func get_metadatas(data_key: string, version: string) -> FdbMetadatasResult:
     on HOST_PEER_ID:
-        results <- Node.get_metadatas(data_key)
+        results <- Node.get_metadatas(data_key, version)
     <- results
 
 func get_node_clock() -> FdbClock:
@@ -106,42 +65,49 @@ func get_pending_transactions() -> FdbTransactionsResult:
         results <- Node.get_pending_transactions()
     <- results
 
-func get_success_transactions(args: GetSuccessTransactions) -> FdbTransactionsResult:
-   on HOST_PEER_ID:
-        results <- Node.get_success_transactions(args.from, args.to)
-   <- results
-
 func get_transaction(hash: string) -> FdbTransactionResult:
     on HOST_PEER_ID:
         results <- Node.get_transaction(hash)
     <- results
 
-func get_transactions(args: GetTransactions) -> FdbTransactionsResult:
+func get_transactions(query: []TransactionQuery, ordering: []TransactionOrdering, from: u32, to: u32) -> FdbTransactionsResult:
     on HOST_PEER_ID:
-        results <- Node.get_transactions(args.query, args.ordering, args.from, args.to)
+        results <- Node.get_transactions(query, ordering, from, to)
     <- results
 
-func search_cron_tx(args: SearchCronTx) -> FdbCronTxsResult:
+func init(): 
     on HOST_PEER_ID:
-        results <- Node.search_cron_tx(args.address, args.chain, args.topic)
+        Node.init()
+
+func publish(tx_request: TransactionRequest) -> FdbResult:
+    on HOST_PEER_ID:
+        results <- Node.publish(tx_request)
     <- results
 
-func search_metadatas(args:SearchMetadatas) -> FdbMetadatasResult:
+func publish_batch(txs: []TransactionRequest) -> []FdbResult:
     on HOST_PEER_ID:
-        results <- Node.search_metadatas(args.query, args.ordering, args.from, args.to)
+        results <- Node.publish_batch(txs)
     <- results
 
-func send_batch_transaction(txs: []TransactionRequest) -> []FdbResult:
+func search_cron_tx(address: string, chain: string, topic: string) -> FdbCronTxsResult:
     on HOST_PEER_ID:
-        results <- Node.send_batch_transaction(txs)
+        results <- Node.search_cron_tx(address, chain, topic)
     <- results
 
-func send_cron_tx(args: SendCronTx) -> FdbCronTxResult:
+func search_metadatas(query: []MetadataQuery, ordering: []MetadataOrdering, from: u32, to: u32) -> FdbMetadatasResult:
     on HOST_PEER_ID:
-        results <- Node.send_cron_tx(args.hash, args.data_key, args.data, args.tx_block_number, args.tx_hash, args.token_id)
+        results <- Node.search_metadatas(query, ordering, from, to)
     <- results
 
-func send_transaction(args: TransactionRequest) -> FdbResult:
+func send_cron_tx(hash: string, data_key: string, data: string, tx_block_number: u64, tx_hash: string, token_id: string) -> FdbCronTxResult:
     on HOST_PEER_ID:
-        results <- Node.send_transaction(args.data_key, args.token_key, args.token_id, args.alias, args.public_key, args.signature, args.data, args.method, args.nonce, args.version)
+        results <- Node.send_cron_tx(hash, data_key, data, tx_block_number, tx_hash, token_id)
     <- results
+
+func set_cron(transaction_hash: string):
+    on HOST_PEER_ID:
+        Node.set_cron(transaction_hash)
+
+func set_metadata_cron(meta_contract: MetaContract, data_key: string, on_metacontract_result: bool, metadatas: []FinalMetadata):
+    on HOST_PEER_ID:
+        Node.set_metadata_cron(meta_contract, data_key, on_metacontract_result, metadatas)
