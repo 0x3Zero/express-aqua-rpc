@@ -41,6 +41,8 @@ import {
   PublishArgTx_request,
   publish,
   publish_batch,
+  ipfs_get,
+  Ipfs_getResult,
 } from '../_aqua/transaction';
 
 type Filter = {
@@ -237,6 +239,14 @@ export class TransactionController {
   async publish_batch(args: PublishArgTx_request[]): Promise<PublishResult[] | undefined> {
     try {
       return await publish_batch(args);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async ipfs_get(args: Array<string>): Promise<Ipfs_getResult | undefined> {
+    try {
+      return await ipfs_get(args[0]);
     } catch (e) {
       console.log(e);
     }

@@ -1,5 +1,12 @@
+import "@fluencelabs/aqua-lib/builtin.aqua"
+import "@0x3zero/aqua-lib/builtin.aqua"
 import "./node.aqua"
 
+func ipfs_get(cid: string) -> IpfsDagGetResult:
+  on HOST_PEER_ID:
+    result <- IpfsDag.get(cid, "", 0)
+  <- result
+  
 func deserialize_fork(data: string) -> DataTypeFork:
     on HOST_PEER_ID:
         results <- Node.deserialize_fork(data)
