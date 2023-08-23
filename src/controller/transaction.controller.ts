@@ -4,6 +4,7 @@ import {
   get_active_crons,
   get_all_crons,
   get_meta_contract,
+  get_meta_contract_by_id,
   get_metadata,
   get_metadata_with_history,
   get_metadatas,
@@ -36,6 +37,10 @@ import {
   Get_complete_transactionsResult,
   get_complete_transactions,
   get_cron_tx_latest_block,
+  PublishResult,
+  PublishArgTx_request,
+  publish,
+  publish_batch,
 } from '../_aqua/transaction';
 
 type Filter = {
@@ -101,9 +106,9 @@ export class TransactionController {
     }
   }
 
-  async get_complete_transaction(from: number, to: number): Promise<Get_complete_transactionsResult | undefined> {
+  async get_complete_transactions(args: Array<number>): Promise<Get_complete_transactionsResult | undefined> {
     try {
-      return await get_complete_transactions(from, to);
+      return await get_complete_transactions(args[0], args[1]);
     } catch (e) {
       console.log(e);
     }
@@ -128,6 +133,14 @@ export class TransactionController {
   async get_meta_contract(args: Array<string>): Promise<Get_meta_contractResult | undefined> {
     try {
       return await get_meta_contract(args[0]);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async get_meta_contract_by_id(args: Array<string>): Promise<Get_meta_contractResult | undefined> {
+    try {
+      return await get_meta_contract_by_id(args[0]);
     } catch (e) {
       console.log(e);
     }
@@ -208,6 +221,22 @@ export class TransactionController {
   async send_cron_tx(args: SendCronTx): Promise<Send_cron_txResult | undefined> {
     try {
       return await send_cron_tx(args.hash, args.data_key, args.data, args.tx_block_number, args.tx_hash, args.token_id);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async publish(args: PublishArgTx_request): Promise<PublishResult | undefined> {
+    try {
+      return await publish(args);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async publish_batch(args: PublishArgTx_request[]): Promise<PublishResult[] | undefined> {
+    try {
+      return await publish_batch(args);
     } catch (e) {
       console.log(e);
     }

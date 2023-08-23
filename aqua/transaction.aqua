@@ -40,6 +40,11 @@ func get_meta_contract(token_key: string) -> FdbMetaContractResult:
         results <- Node.get_meta_contract(token_key)
     <- results
 
+func get_meta_contract_by_id(meta_contract_id: string) -> FdbMetaContractResult:
+    on HOST_PEER_ID:
+        results <- Node.get_meta_contract_by_id(meta_contract_id)
+    <- results
+
 func get_metadata(data_key: string, meta_contract_id: string, public_key: string, alias: string, version: string) -> FdbMetadataResult:
     on HOST_PEER_ID:
         results <- Node.get_metadata(data_key, meta_contract_id, public_key, alias, version) 
@@ -73,6 +78,11 @@ func get_transaction(hash: string) -> FdbTransactionResult:
 func get_transactions(query: []TransactionQuery, ordering: []TransactionOrdering, from: u32, to: u32) -> FdbTransactionsResult:
     on HOST_PEER_ID:
         results <- Node.get_transactions(query, ordering, from, to)
+    <- results
+
+func get_transaction_receipt(hash: string) -> FdbTransactionReceiptResult:
+    on HOST_PEER_ID:
+        results <- Node.get_transaction_receipt(hash)
     <- results
 
 func init(): 

@@ -52,6 +52,14 @@ data FdbCronsResult:
   err_msg: string
   crons: []Cron
 
+data TransactionReceipt:
+  hash: string
+  meta_contract_id: string
+  status: i64
+  timestamp: u64
+  error_text: string
+  data: string
+
 data MetaContract:
   token_key: string
   meta_contract_id: string
@@ -120,6 +128,11 @@ data FdbTransactionsResult:
   err_msg: string
   transactions: []Transaction
 
+data FdbTransactionReceiptResult:
+  success: bool
+  err_msg: string
+  receipt: TransactionReceipt
+
 data FinalMetadata:
   public_key: string
   alias: string
@@ -174,6 +187,7 @@ service Node("transaction"):
   get_node_clock() -> FdbClock
   get_pending_transactions() -> FdbTransactionsResult
   get_transaction(hash: string) -> FdbTransactionResult
+  get_transaction_receipt(hash: string) -> FdbTransactionReceiptResult
   get_transactions(query: []TransactionQuery, ordering: []TransactionOrdering, from: u32, to: u32) -> FdbTransactionsResult
   init()  
   publish(tx_request: TransactionRequest) -> FdbResult
