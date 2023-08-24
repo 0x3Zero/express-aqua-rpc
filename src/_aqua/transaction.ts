@@ -380,6 +380,99 @@ export function get_transactions(...args: any) {
 }
 
  
+
+export function generate_data_key(
+    chain_id: string,
+    token_address: string,
+    token_id: string,
+    config?: {ttl?: number}
+): Promise<string>;
+
+export function generate_data_key(
+    peer: FluencePeer,
+    chain_id: string,
+    token_address: string,
+    token_id: string,
+    config?: {ttl?: number}
+): Promise<string>;
+
+export function generate_data_key(...args: any) {
+
+    let script = `
+                    (xor
+                     (seq
+                      (seq
+                       (seq
+                        (seq
+                         (seq
+                          (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                          (call %init_peer_id% ("getDataSrv" "chain_id") [] chain_id)
+                         )
+                         (call %init_peer_id% ("getDataSrv" "token_address") [] token_address)
+                        )
+                        (call %init_peer_id% ("getDataSrv" "token_id") [] token_id)
+                       )
+                       (xor
+                        (call -relay- ("transaction" "generate_data_key") [chain_id token_address token_id] result)
+                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       )
+                      )
+                      (xor
+                       (call %init_peer_id% ("callbackSrv" "response") [result])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                      )
+                     )
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
+                    )
+    `
+    return callFunction$$(
+        args,
+        {
+    "functionName" : "generate_data_key",
+    "arrow" : {
+        "tag" : "arrow",
+        "domain" : {
+            "tag" : "labeledProduct",
+            "fields" : {
+                "chain_id" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "token_address" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "token_id" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                }
+            }
+        },
+        "codomain" : {
+            "tag" : "unlabeledProduct",
+            "items" : [
+                {
+                    "tag" : "scalar",
+                    "name" : "string"
+                }
+            ]
+        }
+    },
+    "names" : {
+        "relay" : "-relay-",
+        "getDataSrv" : "getDataSrv",
+        "callbackSrv" : "callbackSrv",
+        "responseSrv" : "callbackSrv",
+        "responseFnName" : "response",
+        "errorHandlingSrv" : "errorHandlingSrv",
+        "errorFnName" : "error"
+    }
+},
+        script
+    )
+}
+
+ 
 export type Get_complete_transactionsResult = { err_msg: string; success: boolean; transactions: { alias: string; chain_id: string; data: string; data_key: string; hash: string; mcdata: string; meta_contract_id: string; method: string; public_key: string; status: number; timestamp: number; token_address: string; token_id: string; token_key: string; version: string; }[]; }
 export function get_complete_transactions(
     from: number,
@@ -692,7 +785,6 @@ export function get_pending_transactions(...args: any) {
 export type Send_cron_txResult = { cron_tx: { address: string; chain: string; data: string; data_key: string; error_text: string; hash: string; meta_contract_id: string; status: number; timestamp: number; token_id: string; token_key: string; token_type: string; topic: string; tx_block_number: number; tx_hash: string; }; err_msg: string; success: boolean; }
 export function send_cron_tx(
     hash: string,
-    data_key: string,
     data: string,
     tx_block_number: number,
     tx_hash: string,
@@ -703,7 +795,6 @@ export function send_cron_tx(
 export function send_cron_tx(
     peer: FluencePeer,
     hash: string,
-    data_key: string,
     data: string,
     tx_block_number: number,
     tx_hash: string,
@@ -722,11 +813,8 @@ export function send_cron_tx(...args: any) {
                          (seq
                           (seq
                            (seq
-                            (seq
-                             (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                             (call %init_peer_id% ("getDataSrv" "hash") [] hash)
-                            )
-                            (call %init_peer_id% ("getDataSrv" "data_key") [] data_key)
+                            (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                            (call %init_peer_id% ("getDataSrv" "hash") [] hash)
                            )
                            (call %init_peer_id% ("getDataSrv" "data") [] data)
                           )
@@ -737,7 +825,7 @@ export function send_cron_tx(...args: any) {
                         (call %init_peer_id% ("getDataSrv" "token_id") [] token_id)
                        )
                        (xor
-                        (call -relay- ("transaction" "send_cron_tx") [hash data_key data tx_block_number tx_hash token_id] results)
+                        (call -relay- ("transaction" "send_cron_tx") [hash data tx_block_number tx_hash token_id] results)
                         (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                        )
                       )
@@ -759,10 +847,6 @@ export function send_cron_tx(...args: any) {
             "tag" : "labeledProduct",
             "fields" : {
                 "hash" : {
-                    "tag" : "scalar",
-                    "name" : "string"
-                },
-                "data_key" : {
                     "tag" : "scalar",
                     "name" : "string"
                 },
@@ -884,11 +968,13 @@ export function send_cron_tx(...args: any) {
     )
 }
 
-export type Set_metadata_cronArgMeta_contract = { cid: string; meta_contract_id: string; public_key: string; token_key: string; } 
+export type Set_metadata_cronArgMeta_contract = { cid: string; meta_contract_id: string; public_key: string; token_key: string; }
+export type Set_metadata_cronArgCron = { abi_url: string; address: string; chain: string; hash: string; meta_contract_id: string; node_url: string; public_key: string; status: number; token_key: string; token_type: string; topic: string; } 
 
 export function set_metadata_cron(
     meta_contract: Set_metadata_cronArgMeta_contract,
-    data_key: string,
+    cron: Set_metadata_cronArgCron,
+    token_id: string,
     on_metacontract_result: boolean,
     metadatas: { alias: string; content: string; loose: number; public_key: string; }[],
     config?: {ttl?: number}
@@ -897,7 +983,8 @@ export function set_metadata_cron(
 export function set_metadata_cron(
     peer: FluencePeer,
     meta_contract: Set_metadata_cronArgMeta_contract,
-    data_key: string,
+    cron: Set_metadata_cronArgCron,
+    token_id: string,
     on_metacontract_result: boolean,
     metadatas: { alias: string; content: string; loose: number; public_key: string; }[],
     config?: {ttl?: number}
@@ -912,17 +999,20 @@ export function set_metadata_cron(...args: any) {
                        (seq
                         (seq
                          (seq
-                          (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                          (call %init_peer_id% ("getDataSrv" "meta_contract") [] meta_contract)
+                          (seq
+                           (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                           (call %init_peer_id% ("getDataSrv" "meta_contract") [] meta_contract)
+                          )
+                          (call %init_peer_id% ("getDataSrv" "cron") [] cron)
                          )
-                         (call %init_peer_id% ("getDataSrv" "data_key") [] data_key)
+                         (call %init_peer_id% ("getDataSrv" "token_id") [] token_id)
                         )
                         (call %init_peer_id% ("getDataSrv" "on_metacontract_result") [] on_metacontract_result)
                        )
                        (call %init_peer_id% ("getDataSrv" "metadatas") [] metadatas)
                       )
                       (xor
-                       (call -relay- ("transaction" "set_metadata_cron") [meta_contract data_key on_metacontract_result metadatas])
+                       (call -relay- ("transaction" "set_metadata_cron") [meta_contract cron token_id on_metacontract_result metadatas])
                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                       )
                      )
@@ -960,7 +1050,57 @@ export function set_metadata_cron(...args: any) {
                         }
                     }
                 },
-                "data_key" : {
+                "cron" : {
+                    "tag" : "struct",
+                    "name" : "Cron",
+                    "fields" : {
+                        "abi_url" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "node_url" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "token_type" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "public_key" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "hash" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "status" : {
+                            "tag" : "scalar",
+                            "name" : "i64"
+                        },
+                        "token_key" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "address" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "topic" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "chain" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "meta_contract_id" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        }
+                    }
+                },
+                "token_id" : {
                     "tag" : "scalar",
                     "name" : "string"
                 },
@@ -1014,7 +1154,7 @@ export function set_metadata_cron(...args: any) {
 }
 
  
-export type Get_all_cronsResult = { crons: { address: string; chain: string; hash: string; meta_contract_id: string; node_url: string; public_key: string; status: number; token_key: string; token_type: string; topic: string; }[]; err_msg: string; success: boolean; }
+export type Get_all_cronsResult = { crons: { abi_url: string; address: string; chain: string; hash: string; meta_contract_id: string; node_url: string; public_key: string; status: number; token_key: string; token_type: string; topic: string; }[]; err_msg: string; success: boolean; }
 export function get_all_crons(
     config?: {ttl?: number}
 ): Promise<Get_all_cronsResult>;
@@ -1069,6 +1209,10 @@ export function get_all_crons(...args: any) {
                                 "tag" : "struct",
                                 "name" : "Cron",
                                 "fields" : {
+                                    "abi_url" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
                                     "node_url" : {
                                         "tag" : "scalar",
                                         "name" : "string"
@@ -1413,7 +1557,7 @@ export function publish(...args: any) {
 }
 
  
-export type Get_metadatasResult = { err_msg: string; metadatas: { alias: string; cid: string; data_key: string; hash: string; loose: number; meta_contract_id: string; public_key: string; token_key: string; version: string; }[]; success: boolean; }
+export type Get_metadatasResult = { err_msg: string; metadatas: { alias: string; cid: string; data_key: string; hash: string; loose: number; meta_contract_id: string; public_key: string; token_id: string; token_key: string; version: string; }[]; success: boolean; }
 export function get_metadatas(
     data_key: string,
     version: string,
@@ -1505,15 +1649,19 @@ export function get_metadatas(...args: any) {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
-                                    "token_key" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
                                     "alias" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
                                     "version" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "token_id" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "token_key" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
@@ -1704,7 +1852,7 @@ export function set_cron(...args: any) {
 }
 
  
-export type Get_active_cronsResult = { crons: { address: string; chain: string; hash: string; meta_contract_id: string; node_url: string; public_key: string; status: number; token_key: string; token_type: string; topic: string; }[]; err_msg: string; success: boolean; }
+export type Get_active_cronsResult = { crons: { abi_url: string; address: string; chain: string; hash: string; meta_contract_id: string; node_url: string; public_key: string; status: number; token_key: string; token_type: string; topic: string; }[]; err_msg: string; success: boolean; }
 export function get_active_crons(
     config?: {ttl?: number}
 ): Promise<Get_active_cronsResult>;
@@ -1759,6 +1907,10 @@ export function get_active_crons(...args: any) {
                                 "tag" : "struct",
                                 "name" : "Cron",
                                 "fields" : {
+                                    "abi_url" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
                                     "node_url" : {
                                         "tag" : "scalar",
                                         "name" : "string"
@@ -1830,7 +1982,7 @@ export function get_active_crons(...args: any) {
 }
 
  
-export type Get_metadataResult = { err_msg: string; metadata: { alias: string; cid: string; data_key: string; hash: string; loose: number; meta_contract_id: string; public_key: string; token_key: string; version: string; }; success: boolean; }
+export type Get_metadataResult = { err_msg: string; metadata: { alias: string; cid: string; data_key: string; hash: string; loose: number; meta_contract_id: string; public_key: string; token_id: string; token_key: string; version: string; }; success: boolean; }
 export function get_metadata(
     data_key: string,
     meta_contract_id: string,
@@ -1947,15 +2099,19 @@ export function get_metadata(...args: any) {
                                     "tag" : "scalar",
                                     "name" : "string"
                                 },
-                                "token_key" : {
-                                    "tag" : "scalar",
-                                    "name" : "string"
-                                },
                                 "alias" : {
                                     "tag" : "scalar",
                                     "name" : "string"
                                 },
                                 "version" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "token_id" : {
+                                    "tag" : "scalar",
+                                    "name" : "string"
+                                },
+                                "token_key" : {
                                     "tag" : "scalar",
                                     "name" : "string"
                                 },
@@ -2061,6 +2217,158 @@ export function deserialize_fork(...args: any) {
                         "token_id" : {
                             "tag" : "scalar",
                             "name" : "string"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "names" : {
+        "relay" : "-relay-",
+        "getDataSrv" : "getDataSrv",
+        "callbackSrv" : "callbackSrv",
+        "responseSrv" : "callbackSrv",
+        "responseFnName" : "response",
+        "errorHandlingSrv" : "errorHandlingSrv",
+        "errorFnName" : "error"
+    }
+},
+        script
+    )
+}
+
+ 
+export type Get_metadatas_by_tokenkeyResult = { err_msg: string; metadatas: { alias: string; cid: string; data_key: string; hash: string; loose: number; meta_contract_id: string; public_key: string; token_id: string; token_key: string; version: string; }[]; success: boolean; }
+export function get_metadatas_by_tokenkey(
+    token_key: string,
+    token_id: string,
+    version: string,
+    config?: {ttl?: number}
+): Promise<Get_metadatas_by_tokenkeyResult>;
+
+export function get_metadatas_by_tokenkey(
+    peer: FluencePeer,
+    token_key: string,
+    token_id: string,
+    version: string,
+    config?: {ttl?: number}
+): Promise<Get_metadatas_by_tokenkeyResult>;
+
+export function get_metadatas_by_tokenkey(...args: any) {
+
+    let script = `
+                    (xor
+                     (seq
+                      (seq
+                       (seq
+                        (seq
+                         (seq
+                          (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                          (call %init_peer_id% ("getDataSrv" "token_key") [] token_key)
+                         )
+                         (call %init_peer_id% ("getDataSrv" "token_id") [] token_id)
+                        )
+                        (call %init_peer_id% ("getDataSrv" "version") [] version)
+                       )
+                       (xor
+                        (call -relay- ("transaction" "get_metadatas_by_tokenkey") [token_key token_id version] results)
+                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       )
+                      )
+                      (xor
+                       (call %init_peer_id% ("callbackSrv" "response") [results])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                      )
+                     )
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
+                    )
+    `
+    return callFunction$$(
+        args,
+        {
+    "functionName" : "get_metadatas_by_tokenkey",
+    "arrow" : {
+        "tag" : "arrow",
+        "domain" : {
+            "tag" : "labeledProduct",
+            "fields" : {
+                "token_key" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "token_id" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "version" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                }
+            }
+        },
+        "codomain" : {
+            "tag" : "unlabeledProduct",
+            "items" : [
+                {
+                    "tag" : "struct",
+                    "name" : "FdbMetadatasResult",
+                    "fields" : {
+                        "err_msg" : {
+                            "tag" : "scalar",
+                            "name" : "string"
+                        },
+                        "metadatas" : {
+                            "tag" : "array",
+                            "type" : {
+                                "tag" : "struct",
+                                "name" : "Metadata",
+                                "fields" : {
+                                    "loose" : {
+                                        "tag" : "scalar",
+                                        "name" : "i64"
+                                    },
+                                    "public_key" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "hash" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "cid" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "alias" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "version" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "token_id" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "token_key" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "meta_contract_id" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "data_key" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    }
+                                }
+                            }
+                        },
+                        "success" : {
+                            "tag" : "scalar",
+                            "name" : "bool"
                         }
                     }
                 }
@@ -2215,7 +2523,7 @@ export function publish_batch(...args: any) {
 }
 
  
-export type Search_metadatasResult = { err_msg: string; metadatas: { alias: string; cid: string; data_key: string; hash: string; loose: number; meta_contract_id: string; public_key: string; token_key: string; version: string; }[]; success: boolean; }
+export type Search_metadatasResult = { err_msg: string; metadatas: { alias: string; cid: string; data_key: string; hash: string; loose: number; meta_contract_id: string; public_key: string; token_id: string; token_key: string; version: string; }[]; success: boolean; }
 export function search_metadatas(
     query: { column: string; op: string; query: string; }[],
     ordering: { column: string; sort: string; }[],
@@ -2355,15 +2663,19 @@ export function search_metadatas(...args: any) {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
-                                    "token_key" : {
-                                        "tag" : "scalar",
-                                        "name" : "string"
-                                    },
                                     "alias" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
                                     "version" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "token_id" : {
+                                        "tag" : "scalar",
+                                        "name" : "string"
+                                    },
+                                    "token_key" : {
                                         "tag" : "scalar",
                                         "name" : "string"
                                     },
@@ -2383,6 +2695,90 @@ export function search_metadatas(...args: any) {
                             "name" : "bool"
                         }
                     }
+                }
+            ]
+        }
+    },
+    "names" : {
+        "relay" : "-relay-",
+        "getDataSrv" : "getDataSrv",
+        "callbackSrv" : "callbackSrv",
+        "responseSrv" : "callbackSrv",
+        "responseFnName" : "response",
+        "errorHandlingSrv" : "errorHandlingSrv",
+        "errorFnName" : "error"
+    }
+},
+        script
+    )
+}
+
+ 
+
+export function generate_token_key(
+    chain_id: string,
+    token_address: string,
+    config?: {ttl?: number}
+): Promise<string>;
+
+export function generate_token_key(
+    peer: FluencePeer,
+    chain_id: string,
+    token_address: string,
+    config?: {ttl?: number}
+): Promise<string>;
+
+export function generate_token_key(...args: any) {
+
+    let script = `
+                    (xor
+                     (seq
+                      (seq
+                       (seq
+                        (seq
+                         (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                         (call %init_peer_id% ("getDataSrv" "chain_id") [] chain_id)
+                        )
+                        (call %init_peer_id% ("getDataSrv" "token_address") [] token_address)
+                       )
+                       (xor
+                        (call -relay- ("transaction" "generate_token_key") [chain_id token_address] result)
+                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       )
+                      )
+                      (xor
+                       (call %init_peer_id% ("callbackSrv" "response") [result])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                      )
+                     )
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
+                    )
+    `
+    return callFunction$$(
+        args,
+        {
+    "functionName" : "generate_token_key",
+    "arrow" : {
+        "tag" : "arrow",
+        "domain" : {
+            "tag" : "labeledProduct",
+            "fields" : {
+                "chain_id" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "token_address" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                }
+            }
+        },
+        "codomain" : {
+            "tag" : "unlabeledProduct",
+            "items" : [
+                {
+                    "tag" : "scalar",
+                    "name" : "string"
                 }
             ]
         }

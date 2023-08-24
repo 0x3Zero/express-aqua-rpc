@@ -67,6 +67,11 @@ func get_metadatas(data_key: string, version: string) -> FdbMetadatasResult:
         results <- Node.get_metadatas(data_key, version)
     <- results
 
+func get_metadatas_by_tokenkey(token_key: string, token_id: string, version: string) -> FdbMetadatasResult:
+    on HOST_PEER_ID:
+        results <- Node.get_metadatas_by_tokenkey(token_key, token_id, version)
+    <- results
+
 func get_node_clock() -> FdbClock:
     on HOST_PEER_ID:
         results <- Node.get_node_clock()
@@ -116,15 +121,25 @@ func search_metadatas(query: []MetadataQuery, ordering: []MetadataOrdering, from
         results <- Node.search_metadatas(query, ordering, from, to)
     <- results
 
-func send_cron_tx(hash: string, data_key: string, data: string, tx_block_number: u64, tx_hash: string, token_id: string) -> FdbCronTxResult:
+func send_cron_tx(hash: string, data: string, tx_block_number: u64, tx_hash: string, token_id: string) -> FdbCronTxResult:
     on HOST_PEER_ID:
-        results <- Node.send_cron_tx(hash, data_key, data, tx_block_number, tx_hash, token_id)
+        results <- Node.send_cron_tx(hash, data, tx_block_number, tx_hash, token_id)
     <- results
 
 func set_cron(transaction_hash: string):
     on HOST_PEER_ID:
         Node.set_cron(transaction_hash)
 
-func set_metadata_cron(meta_contract: MetaContract, data_key: string, on_metacontract_result: bool, metadatas: []FinalMetadata):
+func set_metadata_cron(meta_contract: MetaContract, cron: Cron, token_id: string, on_metacontract_result: bool, metadatas: []FinalMetadata):
     on HOST_PEER_ID:
-        Node.set_metadata_cron(meta_contract, data_key, on_metacontract_result, metadatas)
+        Node.set_metadata_cron(meta_contract, cron, token_id, on_metacontract_result, metadatas)
+
+func generate_token_key(chain_id: string, token_address: string) -> string:
+    on HOST_PEER_ID:
+        result <- Node.generate_token_key(chain_id, token_address)
+    <- result
+
+func generate_data_key(chain_id: string, token_address: string, token_id: string) -> string:
+    on HOST_PEER_ID:
+        result <- Node.generate_data_key(chain_id, token_address, token_id)
+    <- result
