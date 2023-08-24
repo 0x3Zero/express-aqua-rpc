@@ -8,6 +8,7 @@ import {
   get_metadata,
   get_metadata_with_history,
   get_metadatas,
+  get_metadatas_by_tokenkey,
   get_pending_transactions,
   get_transaction,
   Get_active_cronsResult,
@@ -43,6 +44,8 @@ import {
   publish_batch,
   ipfs_get,
   Ipfs_getResult,
+  generate_token_key,
+  generate_data_key,
 } from '../_aqua/transaction';
 
 type Filter = {
@@ -172,6 +175,14 @@ export class TransactionController {
     }
   }
 
+  async get_metadatas_by_tokenkey(args: Array<string>): Promise<Get_metadatasResult | undefined> {
+    try {
+      return await get_metadatas_by_tokenkey(args[0], args[1], args[2]);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   async get_node_clock(): Promise<Get_node_clockResult | undefined> {
     try {
       return await get_node_clock();
@@ -222,7 +233,7 @@ export class TransactionController {
 
   async send_cron_tx(args: SendCronTx): Promise<Send_cron_txResult | undefined> {
     try {
-      return await send_cron_tx(args.hash, args.data_key, args.data, args.tx_block_number, args.tx_hash, args.token_id);
+      return await send_cron_tx(args.hash, args.data, args.tx_block_number, args.tx_hash, args.token_id);
     } catch (e) {
       console.log(e);
     }
@@ -247,6 +258,22 @@ export class TransactionController {
   async ipfs_get(args: Array<string>): Promise<Ipfs_getResult | undefined> {
     try {
       return await ipfs_get(args[0]);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async generate_token_key(args: Array<string>): Promise<string | undefined> {
+    try {
+      return await generate_token_key(args[0], args[1]);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async generate_data_key(args: Array<string>): Promise<string | undefined> {
+    try {
+      return await generate_data_key(args[0], args[1], args[2]);
     } catch (e) {
       console.log(e);
     }
