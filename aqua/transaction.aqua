@@ -42,6 +42,11 @@ func get_cron_tx_latest_block(address: string, chain: string, topic: string) -> 
         results <- Node.get_cron_tx_latest_block(address, chain, topic)
     <- results
 
+func get_cron_latest_block(hash: string) -> u64:
+    on HOST_PEER_ID:
+        results <- Node.get_cron_latest_block(hash)
+    <- results
+
 func get_meta_contract(token_key: string) -> FdbMetaContractResult:
     on HOST_PEER_ID:
         results <- Node.get_meta_contract(token_key)
@@ -65,6 +70,11 @@ func get_metadata_with_history(data_key: string, meta_contract_id: string, publi
 func get_metadatas(data_key: string, version: string) -> FdbMetadatasResult:
     on HOST_PEER_ID:
         results <- Node.get_metadatas(data_key, version)
+    <- results
+
+func get_metadatas_all_version(data_key: string) -> FdbMetadatasResult:
+    on HOST_PEER_ID:
+        results <- Node.get_metadatas_all_version(data_key)
     <- results
 
 func get_metadatas_by_tokenkey(token_key: string, token_id: string, version: string) -> FdbMetadatasResult:
@@ -130,9 +140,10 @@ func set_cron(transaction_hash: string):
     on HOST_PEER_ID:
         Node.set_cron(transaction_hash)
 
-func set_metadata_cron(meta_contract: MetaContract, cron: Cron, token_id: string, on_metacontract_result: bool, metadatas: []FinalMetadata):
+func set_metadata_cron(meta_contract: MetaContract, cron: Cron, token_id: string, on_metacontract_result: bool, metadatas: []FinalMetadata) -> FdbMetadatasResult:
     on HOST_PEER_ID:
-        Node.set_metadata_cron(meta_contract, cron, token_id, on_metacontract_result, metadatas)
+        results <- Node.set_metadata_cron(meta_contract, cron, token_id, on_metacontract_result, metadatas)
+    <- results
 
 func generate_token_key(chain_id: string, token_address: string) -> string:
     on HOST_PEER_ID:

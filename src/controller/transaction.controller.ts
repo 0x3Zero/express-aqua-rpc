@@ -8,6 +8,7 @@ import {
   get_metadata,
   get_metadata_with_history,
   get_metadatas,
+  get_metadatas_all_version,
   get_metadatas_by_tokenkey,
   get_pending_transactions,
   get_transaction,
@@ -38,6 +39,7 @@ import {
   Get_complete_transactionsResult,
   get_complete_transactions,
   get_cron_tx_latest_block,
+  get_cron_latest_block,
   PublishResult,
   PublishArgTx_request,
   publish,
@@ -135,6 +137,14 @@ export class TransactionController {
     }
   }
 
+  async get_cron_latest_block(args: Array<string>): Promise<number | undefined> {
+    try {
+      return await get_cron_latest_block(args[0]);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   async get_meta_contract(args: Array<string>): Promise<Get_meta_contractResult | undefined> {
     try {
       return await get_meta_contract(args[0]);
@@ -170,6 +180,14 @@ export class TransactionController {
   async get_metadatas(args: Array<string>): Promise<Get_metadatasResult | undefined> {
     try {
       return await get_metadatas(args[0], args[1]);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async get_metadatas_all_version(args: Array<string>): Promise<Get_metadatasResult | undefined> {
+    try {
+      return await get_metadatas_all_version(args[0]);
     } catch (e) {
       console.log(e);
     }
