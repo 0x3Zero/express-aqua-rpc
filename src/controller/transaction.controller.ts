@@ -8,6 +8,7 @@ import {
   get_metadata,
   get_metadata_with_history,
   get_metadatas,
+  get_metadatas_by_block,
   get_metadatas_all_version,
   get_metadatas_by_tokenkey,
   get_pending_transactions,
@@ -180,6 +181,14 @@ export class TransactionController {
   async get_metadatas(args: Array<string>): Promise<Get_metadatasResult | undefined> {
     try {
       return await get_metadatas(args[0], args[1]);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async get_metadatas_by_block(args: Array<string>): Promise<Get_metadatasResult | undefined> {
+    try {
+      return await get_metadatas_by_block(args[0], args[1]);
     } catch (e) {
       console.log(e);
     }
