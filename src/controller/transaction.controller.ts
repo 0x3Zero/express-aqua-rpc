@@ -188,7 +188,7 @@ export class TransactionController {
 
   async get_metadatas_by_block(args: Array<string>): Promise<Get_metadatasResult | undefined> {
     try {
-      return await get_metadatas_by_block(args[0], args[1]);
+      return await get_metadatas_by_block(args[0], args[1], args[2]);
     } catch (e) {
       console.log(e);
     }

@@ -825,7 +825,7 @@ export function set_metadata_cron(
     cron: Set_metadata_cronArgCron,
     token_id: string,
     on_metacontract_result: boolean,
-    metadatas: { alias: string; content: string; loose: number; public_key: string; }[],
+    metadatas: { alias: string; content: string; loose: number; public_key: string; version: string; }[],
     config?: {ttl?: number}
 ): Promise<Set_metadata_cronResult>;
 
@@ -835,7 +835,7 @@ export function set_metadata_cron(
     cron: Set_metadata_cronArgCron,
     token_id: string,
     on_metacontract_result: boolean,
-    metadatas: { alias: string; content: string; loose: number; public_key: string; }[],
+    metadatas: { alias: string; content: string; loose: number; public_key: string; version: string; }[],
     config?: {ttl?: number}
 ): Promise<Set_metadata_cronResult>;
 
@@ -977,7 +977,11 @@ export function set_metadata_cron(...args: any) {
                         "tag" : "struct",
                         "name" : "FinalMetadata",
                         "fields" : {
-                            "alias" : {
+                            "loose" : {
+                                "tag" : "scalar",
+                                "name" : "i64"
+                            },
+                            "public_key" : {
                                 "tag" : "scalar",
                                 "name" : "string"
                             },
@@ -985,11 +989,11 @@ export function set_metadata_cron(...args: any) {
                                 "tag" : "scalar",
                                 "name" : "string"
                             },
-                            "loose" : {
+                            "alias" : {
                                 "tag" : "scalar",
-                                "name" : "i64"
+                                "name" : "string"
                             },
-                            "public_key" : {
+                            "version" : {
                                 "tag" : "scalar",
                                 "name" : "string"
                             }
@@ -2208,6 +2212,7 @@ export type Get_metadatas_by_blockResult = { err_msg: string; metadatas: { alias
 export function get_metadatas_by_block(
     data_key: string,
     meta_contract_id: string,
+    version: string,
     config?: {ttl?: number}
 ): Promise<Get_metadatas_by_blockResult>;
 
@@ -2215,6 +2220,7 @@ export function get_metadatas_by_block(
     peer: FluencePeer,
     data_key: string,
     meta_contract_id: string,
+    version: string,
     config?: {ttl?: number}
 ): Promise<Get_metadatas_by_blockResult>;
 
@@ -2226,13 +2232,16 @@ export function get_metadatas_by_block(...args: any) {
                       (seq
                        (seq
                         (seq
-                         (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
-                         (call %init_peer_id% ("getDataSrv" "data_key") [] data_key)
+                         (seq
+                          (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                          (call %init_peer_id% ("getDataSrv" "data_key") [] data_key)
+                         )
+                         (call %init_peer_id% ("getDataSrv" "meta_contract_id") [] meta_contract_id)
                         )
-                        (call %init_peer_id% ("getDataSrv" "meta_contract_id") [] meta_contract_id)
+                        (call %init_peer_id% ("getDataSrv" "version") [] version)
                        )
                        (xor
-                        (call -relay- ("transaction" "get_metadatas_by_block") [data_key meta_contract_id] results)
+                        (call -relay- ("transaction" "get_metadatas_by_block") [data_key meta_contract_id version] results)
                         (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
                        )
                       )
@@ -2258,6 +2267,10 @@ export function get_metadatas_by_block(...args: any) {
                     "name" : "string"
                 },
                 "meta_contract_id" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "version" : {
                     "tag" : "scalar",
                     "name" : "string"
                 }
