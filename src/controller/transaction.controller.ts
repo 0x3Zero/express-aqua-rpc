@@ -8,6 +8,7 @@ import {
   get_metadata,
   get_metadata_with_history,
   get_metadatas,
+  get_metadatas_count,
   get_metadatas_by_block,
   get_metadatas_all_version,
   get_metadatas_by_tokenkey,
@@ -33,6 +34,7 @@ import {
   Search_metadatasResult,
   search_cron_tx,
   search_metadatas,
+  search_metadatas_count,
   Send_cron_txResult,
   send_cron_tx,
   Get_transactionsResult,
@@ -186,6 +188,14 @@ export class TransactionController {
     }
   }
 
+  async get_metadatas_count(args: Array<string>): Promise<number | undefined> {
+    try {
+      return await get_metadatas_count(args[0], args[1]);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   async get_metadatas_by_block(args: Array<string>): Promise<Get_metadatasResult | undefined> {
     try {
       return await get_metadatas_by_block(args[0], args[1], args[2]);
@@ -253,6 +263,14 @@ export class TransactionController {
   async search_metadatas(args: Filter): Promise<Search_metadatasResult | undefined> {
     try {
       return await search_metadatas(args.query, args.ordering, args.from, args.to);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async search_metadatas_count(args: Filter): Promise<number | undefined> {
+    try {
+      return await search_metadatas_count(args.query, args.ordering, args.from, args.to);
     } catch (e) {
       console.log(e);
     }
