@@ -631,6 +631,138 @@ export function get_pending_transactions(...args: any) {
 }
 
  
+
+export function search_metadatas_count(
+    query: { column: string; op: string; query: string; }[],
+    ordering: { column: string; sort: string; }[],
+    from: number,
+    to: number,
+    config?: {ttl?: number}
+): Promise<number>;
+
+export function search_metadatas_count(
+    peer: FluencePeer,
+    query: { column: string; op: string; query: string; }[],
+    ordering: { column: string; sort: string; }[],
+    from: number,
+    to: number,
+    config?: {ttl?: number}
+): Promise<number>;
+
+export function search_metadatas_count(...args: any) {
+
+    let script = `
+                    (xor
+                     (seq
+                      (seq
+                       (seq
+                        (seq
+                         (seq
+                          (seq
+                           (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                           (call %init_peer_id% ("getDataSrv" "query") [] query)
+                          )
+                          (call %init_peer_id% ("getDataSrv" "ordering") [] ordering)
+                         )
+                         (call %init_peer_id% ("getDataSrv" "from") [] from)
+                        )
+                        (call %init_peer_id% ("getDataSrv" "to") [] to)
+                       )
+                       (xor
+                        (call -relay- ("transaction" "search_metadatas_count") [query ordering from to] results)
+                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       )
+                      )
+                      (xor
+                       (call %init_peer_id% ("callbackSrv" "response") [results])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                      )
+                     )
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
+                    )
+    `
+    return callFunction$$(
+        args,
+        {
+    "functionName" : "search_metadatas_count",
+    "arrow" : {
+        "tag" : "arrow",
+        "domain" : {
+            "tag" : "labeledProduct",
+            "fields" : {
+                "query" : {
+                    "tag" : "array",
+                    "type" : {
+                        "tag" : "struct",
+                        "name" : "MetadataQuery",
+                        "fields" : {
+                            "column" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "op" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "query" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            }
+                        }
+                    }
+                },
+                "ordering" : {
+                    "tag" : "array",
+                    "type" : {
+                        "tag" : "struct",
+                        "name" : "MetadataOrdering",
+                        "fields" : {
+                            "column" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            },
+                            "sort" : {
+                                "tag" : "scalar",
+                                "name" : "string"
+                            }
+                        }
+                    }
+                },
+                "from" : {
+                    "tag" : "scalar",
+                    "name" : "u32"
+                },
+                "to" : {
+                    "tag" : "scalar",
+                    "name" : "u32"
+                }
+            }
+        },
+        "codomain" : {
+            "tag" : "unlabeledProduct",
+            "items" : [
+                {
+                    "tag" : "scalar",
+                    "name" : "u64"
+                }
+            ]
+        }
+    },
+    "names" : {
+        "relay" : "-relay-",
+        "getDataSrv" : "getDataSrv",
+        "callbackSrv" : "callbackSrv",
+        "responseSrv" : "callbackSrv",
+        "responseFnName" : "response",
+        "errorHandlingSrv" : "errorHandlingSrv",
+        "errorFnName" : "error"
+    }
+},
+        script
+    )
+}
+
+ 
 export type Send_cron_txResult = { cron_tx: { address: string; chain: string; data: string; data_key: string; error_text: string; hash: string; meta_contract_id: string; status: number; timestamp: number; token_id: string; token_key: string; token_type: string; topic: string; tx_block_number: number; tx_hash: string; }; err_msg: string; success: boolean; }
 export function send_cron_tx(
     hash: string,
@@ -3677,6 +3809,90 @@ export function get_all_cron_txs(...args: any) {
                             "name" : "bool"
                         }
                     }
+                }
+            ]
+        }
+    },
+    "names" : {
+        "relay" : "-relay-",
+        "getDataSrv" : "getDataSrv",
+        "callbackSrv" : "callbackSrv",
+        "responseSrv" : "callbackSrv",
+        "responseFnName" : "response",
+        "errorHandlingSrv" : "errorHandlingSrv",
+        "errorFnName" : "error"
+    }
+},
+        script
+    )
+}
+
+ 
+
+export function get_metadatas_count(
+    data_key: string,
+    version: string,
+    config?: {ttl?: number}
+): Promise<number>;
+
+export function get_metadatas_count(
+    peer: FluencePeer,
+    data_key: string,
+    version: string,
+    config?: {ttl?: number}
+): Promise<number>;
+
+export function get_metadatas_count(...args: any) {
+
+    let script = `
+                    (xor
+                     (seq
+                      (seq
+                       (seq
+                        (seq
+                         (call %init_peer_id% ("getDataSrv" "-relay-") [] -relay-)
+                         (call %init_peer_id% ("getDataSrv" "data_key") [] data_key)
+                        )
+                        (call %init_peer_id% ("getDataSrv" "version") [] version)
+                       )
+                       (xor
+                        (call -relay- ("transaction" "get_metadatas_count") [data_key version] results)
+                        (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 1])
+                       )
+                      )
+                      (xor
+                       (call %init_peer_id% ("callbackSrv" "response") [results])
+                       (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 2])
+                      )
+                     )
+                     (call %init_peer_id% ("errorHandlingSrv" "error") [%last_error% 3])
+                    )
+    `
+    return callFunction$$(
+        args,
+        {
+    "functionName" : "get_metadatas_count",
+    "arrow" : {
+        "tag" : "arrow",
+        "domain" : {
+            "tag" : "labeledProduct",
+            "fields" : {
+                "data_key" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                },
+                "version" : {
+                    "tag" : "scalar",
+                    "name" : "string"
+                }
+            }
+        },
+        "codomain" : {
+            "tag" : "unlabeledProduct",
+            "items" : [
+                {
+                    "tag" : "scalar",
+                    "name" : "u64"
                 }
             ]
         }

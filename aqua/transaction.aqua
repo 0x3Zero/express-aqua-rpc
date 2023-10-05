@@ -72,6 +72,11 @@ func get_metadatas(data_key: string, version: string) -> FdbMetadatasResult:
         results <- Node.get_metadatas(data_key, version)
     <- results
 
+func get_metadatas_count(data_key: string, version: string) -> u64:
+    on HOST_PEER_ID:
+        results <- Node.get_metadatas_count(data_key, version)
+    <- results
+
 func get_metadatas_by_block(data_key: string, meta_contract_id: string, version: string) -> FdbMetadatasResult:
     on HOST_PEER_ID:
         results <- Node.get_metadatas_by_block(data_key, meta_contract_id, version)
@@ -134,6 +139,11 @@ func search_cron_tx(address: string, chain: string, topic: string) -> FdbCronTxs
 func search_metadatas(query: []MetadataQuery, ordering: []MetadataOrdering, from: u32, to: u32) -> FdbMetadatasResult:
     on HOST_PEER_ID:
         results <- Node.search_metadatas(query, ordering, from, to)
+    <- results
+
+func search_metadatas_count(query: []MetadataQuery, ordering: []MetadataOrdering, from: u32, to: u32) -> u64:
+    on HOST_PEER_ID:
+        results <- Node.search_metadatas_count(query, ordering, from, to)
     <- results
 
 func send_cron_tx(hash: string, data: string, tx_block_number: u64, tx_hash: string, token_id: string) -> FdbCronTxResult:
