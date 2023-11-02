@@ -14,6 +14,8 @@ import {
   get_metadatas_by_tokenkey,
   get_pending_transactions,
   get_transaction,
+  get_transaction_receipt,
+  Get_transaction_receiptResult,
   Get_active_cronsResult,
   Get_all_cronsResult,
   Get_meta_contractResult,
@@ -239,6 +241,14 @@ export class TransactionController {
   async get_transaction(args: Array<string>): Promise<Get_transactionResult | undefined> {
     try {
       return await get_transaction(args[0]);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async get_transaction_receipt(args: Array<string>): Promise<Get_transaction_receiptResult | undefined> {
+    try {
+      return await get_transaction_receipt(args[0]);
     } catch (e) {
       console.log(e);
     }
